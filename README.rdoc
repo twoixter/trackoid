@@ -1,17 +1,185 @@
 = trackoid
 
-Description goes here.
+Trackoid is an analytics tracking system made specifically for MongoDB using Mongoid as ORM.
 
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
+= Requirements
 
-== Copyright
+Trackoid requires Mongoid, which obviously in turn requires MongoDB. Although you can only use Trackoid in Rails projects using Mongoid, it can easily be ported to MongoMapper or other ORM. You can also port it to work directly using MongoDB.
 
-Copyright (c) 2010 Jose Miguel Perez. See LICENSE for details.
+Please feel free to fork and port to other libraries. However, Trackoid really requires MongoDB since it is build from scratch to take advantage of several MongoDB features (please let me know if you dare enough to port Trackoid into CouchDB or similar, I will be glad to know).
+
+= Using Trackoid to track analytics information for models
+
+Given the most obvious use for Trackoid, consider this example:
+
+    Class WebPage
+      include Mongoid::Document
+      include Mongoid::Tracking
+
+      ...
+
+      track :visits
+    end
+    
+This class models a web page, and by using `track :visits` we add a `visits` field to track... well... visits. :-) Later, in out controller we can do:
+
+    def view
+      @page = WebPage.find(params[:webpage_id])
+      
+      @page.visits.inc  # Increment a visit to this page
+    end
+
+That is, dead simple. Later in our views we can use the `visits` field to show the visit information to the users:
+
+    <h1><%= @page.visits.today %> visits to this page today</h1>
+    <p>The page had <%= @page.visits.yesterday %> visits yesterday</p>
+
+Of course, you can also show visits in a time range:
+
+    <h1>Visits on last 7 days</h1>
+    <ul>
+      <% @page.visits.last_days(7).reverse.each_with_index do |i,d| %>
+      <li><%= (DateTime.now - i).to_s %> : <%= d %></li>
+      <% end %>
+    </ul>
+
+== Not only visits...
+
+Of course, you can use Trackoid to track all actions who require numeric analytics in a date frame.
+
+=== Prevent login to a control panel with a maximum login attemps
+
+You can track invalid logins so you can prevent login for a user when certain invalid login had been made. Imagine your login controller:
+
+    # User model
+    class User
+      include Mongoid::Document
+      include Mongoid::Tracking
+      
+      track :failed_logins
+    end
+
+    # User controller
+    def login
+      user = User.find(params[:email])
+      
+      # Stop login if failed attemps > 3
+      redirect(root_path) if user.failed_logins.today > 3
+
+      # Continue with the normal login steps
+      if user.authenticate(params[:password])
+        redirect_back_or_default(root_path)
+      else
+        user.failed_logins.inc
+      end
+    end
+
+Note that additionally you have the full failed login history for free. :-)
+
+    # All failed login attemps, ever.
+    @user.failed_logins.sum
+
+    # Failed logins this month.
+    @user.failed_logins.this_month
+
+
+=== Automatically saving a history of document changes
+
+You can combine Trackoid with the power of callbacks to automatically track certain operations, for example modification of a document. This way you have a history of document changes.
+
+    class User
+      include Mongoid::Document
+      include Mongoid::Tracking
+
+      field :name
+      track :changes
+
+      after_update :track_changes
+
+      protected
+      def track_changes
+        self.changes.inc
+      end
+    end
+
+
+=== Track temperature history for a nuclear plant
+
+Imagine you need a web service to track the temperature of all rooms of a nuclear plant. Now you have a simple method to do this:
+
+    # Room temperature
+    class Room
+      include Mongoid::Document
+      include Mongoid::Tracking
+      
+      track :temperature
+      
+    end
+
+
+    # Temperature controller
+    def set_temperature_for_room
+      @room = Room.find(params[:room_number])
+    
+      @room.temperature.set(current_temperature)
+    end
+
+So, you don't need only to increment or decrement a value, yuo can also set an specific value. Now it's easy to know the maximum temperature of the last 30 days for a room:
+
+    @room.temperature.last_days(30).max
+
+
+= How does it works?
+
+Trakoid works by embedding date tracking information into models. The date tracking information is limited by a granularity of days for now. As the project evolves and we test performance, my idea is to add finer granularity of hours and perhaps, minutes.
+
+== Scalability and performance
+
+Trackoid is made from the ground up to take advantage of the great scalability features of MongoDB. Trackoid uses "upsert" operations, bypassing Mongoid controllers so that it can be used in a distributed system without data loses. This is perfect for a cloud application.
+
+The problem with a distributed system for tracking analytical information is the atomicity of operations. Imagine you must increment visits information from several servers at the same time and how you would do it. With an SQL model, this is somewhat easy because the tradittional approaches for doing this only require INSERT or UPDATE operations that are atomic by nature. But for a Document Oriented Database like MongoDB you need some kind of special operations. MongoDB uses "upsert" commands, which stands for "update or insert". That is, modify this and create if not exists.
+
+The problem with Mongoid, and with all other ORM for that matter, is that they are not made with those operations in mind. If you store an Array or Hash into a Mongoid document, you read or save it as a whole, you can not increment or store only a value without reading/writting the full Array.
+
+Trackoid issues "upsert" commands directly to the MongoDB driver, with the following structure:
+
+
+  collection.update( {_id:ObjectID}, {$inc: {visits.2010.05.30: 1} }, true )
+
+This way, the collection can receive multiple incremental operations without requiring additional logic for locking or something. The only drawback is that you will not have realtime data in your model. For example:
+
+  v = @page.visits.today      # v is now "5" if there was 5 visits today
+  @page.visits.inc            # Increment visits today
+  @page.visits.today == v+1   # Visits is now incremented in our local copy
+                              # of the object, but we need to reload for it
+                              # to reflect the realtime visits to the page
+                              # since there could be another processes
+                              # updating visits
+
+In practice, we don't need visits information so fine grained, but it's good to take this into account.
+
+== Embedding tracking information into models
+
+Tracking analytics data in SQL databases was historicaly saved into her own table, perhaps called `site_visits` with a relation to the sites table and each row saving an integer for each day.
+
+    Table "site_visits"
+   
+    SiteID  Date        Visits
+    ------  ----------  ------
+    1234    2010-05-01  34
+    1234    2010-05-02  25
+    1234    2010-05-03  45
+
+With this schema, it's easy to get visits for a website using single SQL statements. However, for complex queries this can be easily become cumbersome. Also this doesn't work so well for systems using a generic SQL DSL like ActiveRecord since for really taking advantage of some queries you need to use SQL language directly, one option that isn't neither really interesting nor available.
+
+Trackoid uses an embedding approach to tackle this. For the above examples, Trackoid would embedd a ruby Hash into the Site model. This means the tracking information is already saved "inside" the Site, and we don't have to reach the database for any date querying! Moreover, since the data retrieved with the accessor methods like "last_days", "this_month" and the like, are already arrays, we could use Array methods like sum, count, max, min, etc...
+
+== Memory implications
+
+Since storing all tracking information with the model implies we add additional information that can grow, and grow, and grow... You can be wondering yourself if this is a good idea. Yes, it's is, or at least I think so. Let me convice you...
+
+MongoDB stores information in BSON format as a binary representation of a JSON structure. So, BSON stores integers like integers, not like string representations of ASCII characters. This is important to calculate the space used for analytic information.
+
+A year full of statistical data takes only 2.8Kb, if you store integers. If your statistical data includes floats, a year full of information takes 4.3Kb. I said "a year full of data" because Trackoid does not store information for days without data.
+
+For comparison, this README is already 8.5Kb in size.

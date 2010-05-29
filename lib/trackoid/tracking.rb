@@ -23,8 +23,8 @@ module Mongoid #:nodoc:
         name_sym = "#{name}_data".to_sym
         field name_sym, :type => Hash, :default => {}
         
-        # Shoul we index this field?
-        index name_sym
+        # Shoul we make an index for this field?
+        # index name_sym
 
         define_method("#{name}") do
           Tracker.new(self, name_sym)

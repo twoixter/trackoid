@@ -13,9 +13,9 @@ module Mongoid  #:nodoc:
         raise "Can not update a recently created object" if @owner.new_record?
 
         update_data(data_for(date) + how_much, date)
-
-        # tc.collection.update( tc._selector, { "$inc" => {"stats.2010.1.1" => 5} }, :upsert => false )
-        { (how_much > 0 ? "$inc" : "$dec") => update_hash(date, how_much.abs) }
+        @owner.collection.update( @owner._selector,
+            { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
+            :upsert => true)
       end
 
       def inc(date = DateTime.now)
@@ -30,26 +30,32 @@ module Mongoid  #:nodoc:
         raise "Can not update a recently created object" if @owner.new_record?
 
         update_data(how_much, date)
-
-        { "$set" => update_hash(date, how_much) }
+        @owner.collection.update( @owner._selector,
+            { "$set" => update_hash(how_much, date) },
+            :upsert => true)
       end
 
       # Access methods
       def today
-        [data_for(Date.today)]
+        data_for(Date.today)
       end
 
       def yesterday
-        [data_for(Date.today - 1)]
+        data_for(Date.today - 1)
       end
 
       def last_days(how_much = 7)
-        return today unless how_much > 0
+        return [today] unless how_much > 0
 
-        date = DateTime.now
-        values = []
+        date, values = DateTime.now, []
         (date - how_much.abs + 1).step(date) {|d| values << data_for(d) }
         values
+      end
+
+      def on(date)
+        date = DateTime.parse(date) if date.is_a?(String)
+        return date.collect {|d| data_for(d)} if date.is_a?(Range)
+        data_for(date)
       end
 
       # Private methods
@@ -82,7 +88,7 @@ module Mongoid  #:nodoc:
       def month_literal(d); "#{d.year}.#{d.month}"; end
       def date_literal(d);  "#{d.year}.#{d.month}.#{d.day}"; end
 
-      def update_hash(date, num)
+      def update_hash(num, date)
         {
           "#{@for}.#{date_literal(date)}" => num
         }
