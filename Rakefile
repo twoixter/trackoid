@@ -5,8 +5,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "trackoid"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid}
+    gem.description = %Q{Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability}
     gem.email = "josemiguel@perezruiz.com"
     gem.homepage = "http://github.com/twoixter/trackoid"
     gem.authors = ["Jose Miguel Perez"]

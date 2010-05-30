@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jose Miguel Perez"]
   s.date = %q{2010-05-30}
-  s.description = %q{Trackoid is an easy but powerful analytics tracker using MongoDB and Mongoid}
+  s.description = %q{Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability}
   s.email = %q{josemiguel@perezruiz.com}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -28,13 +28,14 @@ Gem::Specification.new do |s|
      "lib/trackoid/tracking.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb",
-     "spec/trackoid_spec.rb"
+     "spec/trackoid_spec.rb",
+     "trackoid.gemspec"
   ]
   s.homepage = %q{http://github.com/twoixter/trackoid}
   s.rdoc_options = ["--charset=UTF-8"]
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Trackoid is an easy but powerful scalable analytics tracker using MongoDB and Mongoid}
+  s.summary = %q{Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid}
   s.test_files = [
     "spec/spec_helper.rb",
      "spec/trackoid_spec.rb"
