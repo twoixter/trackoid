@@ -18,6 +18,10 @@ describe Mongoid::Tracking do
     }.should raise_error
   end
 
+  it "should raise error when used in an embedded document" do
+    should fail
+  end
+
   it "should not not raise when used in a class of class Mongoid::Document" do
     lambda {
       class MongoidedDocument
@@ -62,10 +66,6 @@ describe Mongoid::Tracking do
       @mock.visits.last_days.should == [0, 0, 0, 0, 0, 0, 0]
     end
 
-    it "should give today stats for last 0 days stats" do
-      @mock.visits.last_days(0).should == [@mock.visits.today]
-    end
-
   end
   
   describe "when using a model in the database" do
@@ -83,6 +83,11 @@ describe Mongoid::Tracking do
     it "should increment visits stats for today" do
       @mock.visits.inc
       @mock.visits.today.should == 1
+    end
+
+    it "should give today stats for last 0 days stats" do
+      @mock.visits.today.should == 1  # Passed by the previous tests?
+      @mock.visits.last_days(0).should == [@mock.visits.today]
     end
 
     it "should increment another visits stats for today for a total of 2" do
