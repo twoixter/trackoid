@@ -10,7 +10,7 @@ module Mongoid  #:nodoc:
 
       # Update methods
       def add(how_much = 1, date = DateTime.now)
-        raise "Can not update a recently created object" if @owner.new_record?
+        raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
         update_data(data_for(date) + how_much, date)
         @owner.collection.update( @owner._selector,
@@ -27,7 +27,7 @@ module Mongoid  #:nodoc:
       end
 
       def set(how_much, date = DateTime.now)
-        raise "Can not update a recently created object" if @owner.new_record?
+        raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
         update_data(how_much, date)
         @owner.collection.update( @owner._selector,

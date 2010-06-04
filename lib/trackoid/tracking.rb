@@ -7,9 +7,9 @@ module Mongoid #:nodoc:
     # field named after :field
     def self.included(base)
       base.class_eval do
-        include Aggregates
+        raise Errors::NotMongoid, "Must be included in a Mongoid::Document" unless self.ancestors.include? Mongoid::Document
 
-        raise "Must be included in a Mongoid::Document" unless self.ancestors.include? Mongoid::Document
+        include Aggregates
         extend ClassMethods
         
         class_inheritable_accessor :tracked_fields

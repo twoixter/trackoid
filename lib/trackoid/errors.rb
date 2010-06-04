@@ -11,5 +11,9 @@ module Mongoid #:nodoc
       end
     end
 
+    class ModelNotSaved < RuntimeError; end
+
+    class NotMongoid < RuntimeError; end
+    
   end
 end

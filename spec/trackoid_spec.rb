@@ -24,10 +24,10 @@ describe Mongoid::Tracking do
         include Mongoid::Tracking
         track :something
       end
-    }.should raise_error
+    }.should raise_error Mongoid::Errors::NotMongoid
   end
 
-  it "should not not raise when used in a class of class Mongoid::Document" do
+  it "should not raise error when used in a class of class Mongoid::Document" do
     lambda {
       class MongoidedDocument
         include Mongoid::Document
@@ -68,7 +68,7 @@ describe Mongoid::Tracking do
     end
 
     it "should not update stats when new record" do
-      lambda { @mock.visits.inc }.should raise_error
+      lambda { @mock.visits.inc }.should raise_error Mongoid::Errors::ModelNotSaved
     end
 
     it "shold create an empty hash as the internal representation" do
@@ -197,7 +197,6 @@ describe Mongoid::Tracking do
 
   context "regression test for github issues" do
     
-    
     it "should not raise undefined method [] for nil:NilClass for objects already saved" do
       class TestModel
         include Mongoid::Document
@@ -206,14 +205,13 @@ describe Mongoid::Tracking do
       end
       TestModel.delete_all
       TestModel.create(:name => "dummy")
-      
+
       class TestModel
         track :something
       end
       tm = TestModel.first
       tm.something.today.should == 0
     end
-    
   
   end
 
