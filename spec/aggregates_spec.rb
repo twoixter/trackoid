@@ -12,6 +12,18 @@ class TestModel
   end
 end
 
+class SecondTestModel
+  include Mongoid::Document
+  include Mongoid::Tracking
+
+  field :name   # Dummy field
+  track :visits
+
+  aggregate :browsers do
+    "Chrome"
+  end
+end
+
 describe Mongoid::Tracking::Aggregates do
 
   before(:all) do
@@ -20,6 +32,10 @@ describe Mongoid::Tracking::Aggregates do
 
   it "should define a class model named after the original model" do
     defined?(TestModelAggregates).should_not be_nil
+  end
+
+  it "should define a class model named after the original second model" do
+    defined?(SecondTestModelAggregates).should_not be_nil
   end
 
   it "should create a has_many relationship in the original model" do

@@ -11,7 +11,7 @@ module Mongoid  #:nodoc:
           class_inheritable_accessor :aggregate_fields, :aggregate_klass
           self.aggregate_fields = []
           self.aggregate_klass = nil
-          delegate :aggregate_fields, :aggregate_klass, :to => "self.class"
+#          delegate :aggregate_fields, :aggregate_klass, :to => "self.class"
         end
       end
 
@@ -31,26 +31,28 @@ module Mongoid  #:nodoc:
         end
 
         def define_aggregate_model
-          raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_defined_class
+          raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined
           define_klass do
             include Mongoid::Document
             include Mongoid::Tracking
+            field :name, :type => String, :default => "Dummy Text"
+#            belongs_to :
           end
           self.aggregate_klass = internal_aggregates_name.constantize
         end
         
-        def foreign_defined_class
+        def foreign_class_defined
           Object.const_defined?(internal_aggregates_name.to_sym)
         end
-        
-        
+
         def add_aggregate_field(name, block)
           aggregate_fields << { name => block }
         end
 
         def define_klass(&block)
-          klass = Class.new &block
-          Object.const_set internal_aggregates_name, klass
+          # klass = Class.new Object, &block
+          klass = Object.const_set internal_aggregates_name, Class.new
+          klass.class_eval(&block)
         end
 
       end
