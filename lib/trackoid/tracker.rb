@@ -5,7 +5,7 @@ module Mongoid  #:nodoc:
     class Tracker
       def initialize(owner, field)
         @owner, @for = owner, field
-        @data = @owner.read_attribute(@for)
+        @data = @owner.read_attribute(@for) || {}
       end
 
       # Update methods

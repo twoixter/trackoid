@@ -9,11 +9,20 @@ class Test
 end
 
 describe Mongoid::Tracking do
+
+  before(:all) do
+    @trackoid_version = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
+  end
+
+  it "should expose the same version as the VERSION file" do
+    Mongoid::Tracking::VERSION.should == @trackoid_version
+  end
   
   it "should raise error when used in a class not of class Mongoid::Document" do
     lambda {
       class NotMongoidClass
         include Mongoid::Tracking
+        track :something
       end
     }.should raise_error
   end
@@ -23,6 +32,7 @@ describe Mongoid::Tracking do
       class MongoidedDocument
         include Mongoid::Document
         include Mongoid::Tracking
+        track :something
       end
     }.should_not raise_error
   end
@@ -46,8 +56,19 @@ describe Mongoid::Tracking do
       @mock.visits.class.should == Mongoid::Tracking::Tracker
     end
 
+    it "should create an array in the class with all tracking fields" do
+      @mock.class.tracked_fields.should == [ :visits_data ]
+    end
+
+    it "should create an array in the class with all tracking fields even when monkey patching" do
+      class Test
+        track :something_else
+      end
+      @mock.class.tracked_fields.should == [ :visits_data, :something_else_data ]
+    end
+
     it "should not update stats when new record" do
-      lambda { @mock.inc }.should raise_error
+      lambda { @mock.visits.inc }.should raise_error
     end
 
     it "shold create an empty hash as the internal representation" do
@@ -64,6 +85,10 @@ describe Mongoid::Tracking do
 
     it "should give today stats for last 0 days stats" do
       @mock.visits.last_days(0).should == [@mock.visits.today]
+    end
+
+    it "should not be aggregated" do
+      @mock.aggregated?.should be_false
     end
 
   end
@@ -166,6 +191,30 @@ describe Mongoid::Tracking do
     end
 
 
+  end
+
+
+
+  context "regression test for github issues" do
+    
+    
+    it "should not raise undefined method [] for nil:NilClass for objects already saved" do
+      class TestModel
+        include Mongoid::Document
+        include Mongoid::Tracking
+        field :name
+      end
+      TestModel.delete_all
+      TestModel.create(:name => "dummy")
+      
+      class TestModel
+        track :something
+      end
+      tm = TestModel.first
+      tm.something.today.should == 0
+    end
+    
+  
   end
 
 end

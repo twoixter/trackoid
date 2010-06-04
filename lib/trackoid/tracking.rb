@@ -1,15 +1,20 @@
 # encoding: utf-8
-require 'trackoid/tracker'
-
 module Mongoid #:nodoc:
-  module Tracking
+  module Tracking #:nodoc:
+
     # Include this module to add analytics tracking into a +root level+ document.
     # Use "track :field" to add a field named :field and an associated mongoid
     # field named after :field
     def self.included(base)
       base.class_eval do
+        include Aggregates
+
         raise "Must be included in a Mongoid::Document" unless self.ancestors.include? Mongoid::Document
         extend ClassMethods
+        
+        class_inheritable_accessor :tracked_fields
+        self.tracked_fields = []
+        delegate :tracked_fields, :internal_track_name, :to => "self.class"
       end
     end
 
@@ -20,18 +25,36 @@ module Mongoid #:nodoc:
       # field. This is necessary so that Mongoid does not "dirty" the field
       # potentially overwriting the original data.
       def track(name)
-        name_sym = "#{name}_data".to_sym
-        field name_sym, :type => Hash, :default => {}
-        
-        # Shoul we make an index for this field?
-        # index name_sym
+        set_tracking_field(name)
+        create_tracking_accessors(name)
+      end
 
+      protected
+      # Returns the internal representation of the tracked field name
+      def internal_track_name(name)
+        "#{name}_data".to_sym
+      end
+
+      # Configures the internal fields for tracking. Additionally also creates
+      # an index for the internal tracking field.
+      def set_tracking_field(name)
+        field internal_track_name(name), :type => Hash, :default => {}
+        # Shoul we make an index for this field?
+        index internal_track_name(name)
+        tracked_fields << internal_track_name(name)
+      end
+      
+      # Creates the tracking field accessor and also disables the original
+      # ones from Mongoid. Hidding here the original accessors for the
+      # Mongoid fields ensures they doesn't get dirty, so Mongoid does not
+      # overwrite old data.
+      def create_tracking_accessors(name)
         define_method("#{name}") do
-          Tracker.new(self, name_sym)
+          Tracker.new(self, "#{name}_data".to_sym)
         end
 
         # Should we just "undef" this methods?
-        # They override the just defined ones from Mongoid
+        # They override the ones defined from Mongoid
         define_method("#{name}_data") do
           raise NoMethodError
         end
@@ -39,8 +62,8 @@ module Mongoid #:nodoc:
         define_method("#{name}_data=") do
           raise NoMethodError
         end
-
       end
+      
     end
 
   end
