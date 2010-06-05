@@ -3,19 +3,41 @@ module Mongoid  #:nodoc:
   module Tracking
     # This internal class handles all interaction for a track field.
     class Tracker
-      def initialize(owner, field)
+      
+      def initialize(owner, field, aggregate_data)
         @owner, @for = owner, field
-        @data = @owner.read_attribute(@for) || {}
+        @data = @owner.read_attribute(@for)
+        
+        # The following is needed if the "field" Mongoid definition for our
+        # internal tracking field does not include option ":default => {}"
+        if @data.nil?
+          @owner.write_attribute(@for, {})
+          @data = @owner.read_attribute(@for)
+        end
+
+        @aggregate_data = aggregate_data
       end
 
       # Update methods
       def add(how_much = 1, date = DateTime.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
-
         update_data(data_for(date) + how_much, date)
+
         @owner.collection.update( @owner._selector,
             { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
             :upsert => true)
+
+        return unless @owner.aggregated?
+
+        @owner.aggregate_fields.each do |(k,v)|
+          token = v.call(@aggregate_data)
+          fk = @owner.class.name.to_s.foreign_key.to_sym
+          selector = { fk => @owner.id, :ns => k, :key => token }
+
+          @owner.aggregate_klass.collection.update( selector,
+              { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
+              :upsert => true)
+        end
       end
 
       def inc(date = DateTime.now)
@@ -28,12 +50,12 @@ module Mongoid  #:nodoc:
 
       def set(how_much, date = DateTime.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
-
         update_data(how_much, date)
         @owner.collection.update( @owner._selector,
             { "$set" => update_hash(how_much, date) },
             :upsert => true)
       end
+
 
       # Access methods
       def today
@@ -46,7 +68,6 @@ module Mongoid  #:nodoc:
 
       def last_days(how_much = 7)
         return [today] unless how_much > 0
-
         date, values = DateTime.now, []
         (date - how_much.abs + 1).step(date) {|d| values << data_for(d) }
         values
@@ -61,11 +82,13 @@ module Mongoid  #:nodoc:
       # Private methods
       private
       def data_for(date)
-        return 0 if @data[date.year.to_s].nil?
-        return 0 if @data[date.year.to_s][date.month.to_s].nil?
+        return 0 if @data.nil? ||
+                    @data[date.year.to_s].nil? ||
+                    @data[date.year.to_s][date.month.to_s].nil?
         @data[date.year.to_s][date.month.to_s][date.day.to_s] || 0
       end
 
+      # TODO: It should be a better way of updating a hash. :-)
       def update_data(value, date)
         if @data[date.year.to_s]
           if @data[date.year.to_s][date.month.to_s]
@@ -93,7 +116,6 @@ module Mongoid  #:nodoc:
           "#{@for}.#{date_literal(date)}" => num
         }
       end
-
 
       # WARNING: This is +only+ for debugging pourposes (rspec y tal)
       def _original_hash

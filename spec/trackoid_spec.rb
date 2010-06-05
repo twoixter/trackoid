@@ -49,7 +49,13 @@ describe Mongoid::Tracking do
     end
 
     it "should create a method for accesing the stats" do
-      @mock.respond_to?(:visits).should == true
+      @mock.respond_to?(:visits).should be_true
+    end
+
+    it "should respond 'false' to field_changed? method" do
+      # Ok, this test is not very relevant since it will return false even
+      # if Trackid does not override it.
+      @mock.visits_changed?.should be_false
     end
 
     it "should create a method for accesing the stats of the proper class" do
@@ -57,14 +63,14 @@ describe Mongoid::Tracking do
     end
 
     it "should create an array in the class with all tracking fields" do
-      @mock.class.tracked_fields.should == [ :visits_data ]
+      @mock.class.tracked_fields.should == [ :visits ]
     end
 
     it "should create an array in the class with all tracking fields even when monkey patching" do
       class Test
         track :something_else
       end
-      @mock.class.tracked_fields.should == [ :visits_data, :something_else_data ]
+      @mock.class.tracked_fields.should == [ :visits, :something_else ]
     end
 
     it "should not update stats when new record" do
@@ -211,8 +217,10 @@ describe Mongoid::Tracking do
       end
       tm = TestModel.first
       tm.something.today.should == 0
+      tm.something.inc
+      tm.something.today.should == 1
     end
-  
+
   end
 
 end

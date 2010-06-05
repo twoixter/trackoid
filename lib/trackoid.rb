@@ -5,6 +5,7 @@ gem "mongoid", ">= 1.9.0"
 require 'trackoid/errors'
 require 'trackoid/tracker'
 require 'trackoid/aggregates'
+require 'trackoid/tracker_aggregates'
 require 'trackoid/tracking'
 
 module Mongoid #:nodoc:
