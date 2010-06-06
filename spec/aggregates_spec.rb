@@ -10,10 +10,10 @@ class TestModel
   # for testing pourposes. Trackoid does not make any difference in the
   # declaration order of tracking fields and aggregate tokens.
   track :visits
-  aggregate :browsers do; "Mozilla".downcase; end
+  aggregate :browsers do |b| b.split.first.downcase if b; end
 
   track :uniques
-  aggregate :referers do; "GoogleBot".downcase; end
+  aggregate :referers do |r| r.split.last.downcase if r; end
 end
 
 class SecondTestModel
@@ -62,8 +62,8 @@ describe Mongoid::Tracking::Aggregates do
 
   it "should create an array in the class with all aggregate fields even when monkey patching" do
     class TestModel
-      aggregate :quarters do
-        "Q1"
+      aggregate :quarters do |q|
+        "Q1";
       end
     end
     @mock.class.aggregate_fields.keys.to_set.should == [ :browsers, :referers, :quarters ].to_set
@@ -167,7 +167,7 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should increment visits for all aggregated instances" do
-      @mock.visits("Aggregate data").inc
+      @mock.visits("Mozilla Firefox").inc
       @mock.browsers.count.should == 1
       @mock.referers.count.should == 1
       @mock.quarters.count.should == 1
@@ -175,7 +175,7 @@ describe Mongoid::Tracking::Aggregates do
 
     it "should increment visits for specific aggregation keys" do
       @mock.browsers("mozilla").size.should == 1
-      @mock.referers("googlebot").size.should == 1
+      @mock.referers("firefox").size.should == 1
       @mock.quarters("Q1").size.should == 1
     end
 
@@ -185,12 +185,47 @@ describe Mongoid::Tracking::Aggregates do
       @mock.quarters("Q2").size.should == 0
     end
 
-    it "should have 1 in visits" do
-      tt = @mock.browsers.visits.collect {|v| v.last_days(7)}
-      tt.should == [[0, 0, 0, 0, 0, 0, 1]]
+    it "should have 1 visits today" do
+      @mock.visits.browsers.today.should == [["mozilla", 1]]
+      @mock.visits.referers.today.should == [["firefox", 1]]
     end
 
-    
+    it "should have 0 visits yesterday" do
+      @mock.visits.browsers.today.should == [["mozilla", 1]]
+      @mock.visits.referers.today.should == [["firefox", 1]]
+    end
+
+    it "should have 1 visits last 7 days" do
+      @mock.visits.browsers.last_days(7).should == [["mozilla", [0, 0, 0, 0, 0, 0, 1]]]
+      @mock.visits.referers.last_days(7).should == [["firefox", [0, 0, 0, 0, 0, 0, 1]]]
+    end
+
+    it "should work adding 1 visit with different aggregation data" do
+      @mock.visits("Google Chrome").inc
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 1]]
+      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 1]]
+      
+      # Just for testing array manipulations
+      @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
+    end
+
+    it "let's chek what happens when sorting the best browser..." do
+      @mock.visits("Google Chrome").inc
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 2]]
+      @mock.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 2]
+    end
+
+    it "should work without aggregation information" do
+      @mock.visits.inc
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 2]]
+      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 2]]
+      
+      # A more throughout test would check totals...
+      visits_today = @mock.visits.today
+      visits_today_with_browser = @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }
+      visits_today.should == visits_today_with_browser + 1
+    end
+
   end
 
 

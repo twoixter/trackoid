@@ -25,9 +25,9 @@ module Mongoid #:nodoc:
       # This is necessary so that Mongoid does not "dirty" the field
       # potentially overwriting the original data.
       def track(name)
-        set_tracking_field(name)
-        create_tracking_accessors(name)
-        update_aggregates(name) if aggregated?
+        set_tracking_field(name.to_sym)
+        create_tracking_accessors(name.to_sym)
+        update_aggregates(name.to_sym) if aggregated?
       end
 
       protected
@@ -42,7 +42,7 @@ module Mongoid #:nodoc:
         field internal_track_name(name), :type => Hash    # , :default => {}
         # Should we make an index for this field?
         index internal_track_name(name)
-        tracked_fields << name.to_sym
+        tracked_fields << name
       end
       
       # Creates the tracking field accessor and also disables the original
@@ -50,8 +50,8 @@ module Mongoid #:nodoc:
       # Mongoid fields ensures they doesn't get dirty, so Mongoid does not
       # overwrite old data.
       def create_tracking_accessors(name)
-        define_method("#{name}") do |*aggr|
-          Tracker.new(self, "#{name}_data".to_sym, aggr)
+        define_method(name) do |*aggr|
+          Tracker.new(self, name, aggr)
         end
 
         # Should we just "undef" this methods?

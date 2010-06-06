@@ -129,6 +129,10 @@ module Mongoid  #:nodoc:
             TrackerAggregates.new(self, name, args)
           end
 
+          define_method("#{name}_with_track") do |track_field, *args|
+            TrackerAggregates.new(self, name, args, track_field)
+          end
+
           define_method("#{name}=") do
             raise NoMethodError
           end

@@ -6,16 +6,29 @@ module Mongoid  #:nodoc:
       
       def initialize(owner, field, aggregate_data)
         @owner, @for = owner, field
-        @data = @owner.read_attribute(@for)
+        @for_data = @owner.internal_track_name(@for)
+        @data = @owner.read_attribute(@for_data)
         
         # The following is needed if the "field" Mongoid definition for our
         # internal tracking field does not include option ":default => {}"
         if @data.nil?
-          @owner.write_attribute(@for, {})
-          @data = @owner.read_attribute(@for)
+          @owner.write_attribute(@for_data, {})
+          @data = @owner.read_attribute(@for_data)
         end
 
-        @aggregate_data = aggregate_data
+        @aggregate_data = aggregate_data.first if aggregate_data.first
+      end
+
+      # Delegate all missing methods to the aggregate accessors. This enables
+      # us to call an aggregation token after the tracking field.
+      #
+      # Example:
+      #
+      #   <tt>@object.visits.browsers ...</tt>
+      #
+      def method_missing(name, *args, &block)
+        super unless @owner.aggregate_fields.member?(name)
+        @owner.send("#{name}_with_track".to_sym, @for, *args, &block)
       end
 
       # Update methods
@@ -30,10 +43,10 @@ module Mongoid  #:nodoc:
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
-          token = v.call(@aggregate_data)
+          next unless token = v.call(@aggregate_data)
+          
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k, :key => token }
-
+          selector = { fk => @owner.id, :ns => k, :key => token.to_s }
           @owner.aggregate_klass.collection.update( selector,
               { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
               :upsert => true)
@@ -50,6 +63,7 @@ module Mongoid  #:nodoc:
 
       def set(how_much, date = DateTime.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
+
         update_data(how_much, date)
         @owner.collection.update( @owner._selector,
             { "$set" => update_hash(how_much, date) },
@@ -113,7 +127,7 @@ module Mongoid  #:nodoc:
 
       def update_hash(num, date)
         {
-          "#{@for}.#{date_literal(date)}" => num
+          "#{@for_data}.#{date_literal(date)}" => num
         }
       end
 
