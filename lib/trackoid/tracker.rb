@@ -96,29 +96,14 @@ module Mongoid  #:nodoc:
       # Private methods
       private
       def data_for(date)
-        return 0 if @data.nil? ||
-                    @data[date.year.to_s].nil? ||
-                    @data[date.year.to_s][date.month.to_s].nil?
-        @data[date.year.to_s][date.month.to_s][date.day.to_s] || 0
+        @data.try(:[], date.year.to_s).try(:[], date.month.to_s).try(:[], date.day.to_s) || 0
       end
 
-      # TODO: It should be a better way of updating a hash. :-)
       def update_data(value, date)
-        if @data[date.year.to_s]
-          if @data[date.year.to_s][date.month.to_s]
-            @data[date.year.to_s][date.month.to_s][date.day.to_s] = value
-          else
-            @data[date.year.to_s][date.month.to_s] = {
-                date.day.to_s => value
-            }
-          end
-        else
-          @data[date.year.to_s] = {
-            date.month.to_s => {
-              date.day.to_s => value
-            }
-          }
-        end
+        [:year, :month].inject(@data) { |data, period|
+          data[date.send(period).to_s] ||= {}
+        }
+        @data[date.year.to_s][date.month.to_s][date.day.to_s] = value
       end
 
       def year_literal(d);  "#{d.year}"; end
