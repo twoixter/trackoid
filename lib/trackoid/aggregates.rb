@@ -109,9 +109,9 @@ module Mongoid  #:nodoc:
         def foreign_class_defined?
           # The following construct doesn't work with namespaced constants.
           # Object.const_defined?(internal_aggregates_name.to_sym)
-
-          cn = internal_aggregates_name.constantize rescue nil
-          !cn.nil?
+          internal_aggregates_name.constantize && true
+        rescue NameError
+          false
         end
 
         # Adds the aggregate field to the array of aggregated fields.
@@ -123,7 +123,10 @@ module Mongoid  #:nodoc:
         # the original class model but with "Aggregates" appended.
         # Example:  TestModel ==> TestModelAggregates
         def define_klass(&block)
-          klass = Object.const_set(internal_aggregates_name, Class.new)
+          scope = internal_aggregates_name.split('::')
+          klass = scope.pop
+          scope = scope.inject(Kernel) {|scope, const_name| scope.const_get(const_name)}
+          klass = scope.const_set(klass, Class.new)
           klass.class_eval(&block)
         end
 
