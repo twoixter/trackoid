@@ -84,7 +84,7 @@ module Mongoid  #:nodoc:
 
         # Defines the aggregation model. It checks for class name conflicts
         def define_aggregate_model
-          raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined
+          raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined?
           parent_name = self.name.underscore
           define_klass do
             include Mongoid::Document
@@ -106,8 +106,12 @@ module Mongoid  #:nodoc:
 
         # Returns true if there is a class defined with the same name as our
         # aggregate class.
-        def foreign_class_defined
-          Object.const_defined?(internal_aggregates_name.to_sym)
+        def foreign_class_defined?
+          # The following construct doesn't work with namespaced constants.
+          # Object.const_defined?(internal_aggregates_name.to_sym)
+
+          cn = internal_aggregates_name.constantize rescue nil
+          !cn.nil?
         end
 
         # Adds the aggregate field to the array of aggregated fields.
