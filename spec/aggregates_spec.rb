@@ -209,21 +209,28 @@ describe Mongoid::Tracking::Aggregates do
       @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
     end
 
+    it "should work also with set" do
+      @mock.visits("Google Chrome").set(5)
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 5]]
+      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 5]]
+      @mock.visits.today.should == 5
+    end
+
     it "let's chek what happens when sorting the best browser..." do
       @mock.visits("Google Chrome").inc
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 2]]
-      @mock.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 2]
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 6]]
+      @mock.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 6]
     end
 
     it "should work without aggregation information" do
       @mock.visits.inc
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 2]]
-      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 2]]
+      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 6]]
+      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 6]]
       
       # A more throughout test would check totals...
       visits_today = @mock.visits.today
       visits_today_with_browser = @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }
-      visits_today.should == visits_today_with_browser + 1
+      visits_today.should == visits_today_with_browser
     end
 
   end
