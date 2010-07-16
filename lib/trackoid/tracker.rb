@@ -32,8 +32,8 @@ module Mongoid  #:nodoc:
       end
 
       # Update methods
-      def add(how_much = 1, date = DateTime.now)
-        raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
+      def add(how_much = 1, date = Date.today)
+        raise Errors::ModelNotSaved, "Can't update a new record. Save first!" if @owner.new_record?
         update_data(data_for(date) + how_much, date)
         @owner.collection.update( @owner._selector,
             { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
@@ -50,15 +50,15 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def inc(date = DateTime.now)
+      def inc(date = Date.today)
         add(1, date)
       end
 
-      def dec(date = DateTime.now)
+      def dec(date = Date.today)
         add(-1, date)
       end
 
-      def set(how_much, date = DateTime.now)
+      def set(how_much, date = Date.today)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
         @owner.collection.update( @owner._selector,
@@ -78,6 +78,14 @@ module Mongoid  #:nodoc:
 
 
       # Access methods
+      def first
+        data_for(first_date)
+      end
+
+      def last
+        data_for(last_date)
+      end
+      
       def today
         data_for(Date.today)
       end
@@ -88,24 +96,50 @@ module Mongoid  #:nodoc:
 
       def last_days(how_much = 7)
         return [today] unless how_much > 0
-        date, values = DateTime.now, []
+        date, values = Date.today, []
         (date - how_much.abs + 1).step(date) {|d| values << data_for(d) }
         values
       end
 
       def on(date)
-        date = DateTime.parse(date) if date.is_a?(String)
         return date.collect {|d| data_for(d)} if date.is_a?(Range)
         data_for(date)
+      end
+
+      def all
+        on(first_date..last_date) if first_date
+      end
+
+      # Utility methods
+      def first_date
+        # We are guaranteed _m and _d to exists unless @data is a malformed
+        # hash, so we need to do this nasty "return nil", sorry...
+        return nil unless _y = @data.keys.min
+        return nil unless _m = @data[_y].keys.min
+        return nil unless _d = @data[_y][_m].keys.min
+        Date.new(_y.to_i, _m.to_i, _d.to_i)
+      end
+      
+      def last_date
+        # We are guaranteed _m and _d to exists unless @data is a malformed
+        # hash, so we need to do this nasty "return nil", sorry...
+        return nil unless _y = @data.keys.max
+        return nil unless _m = @data[_y].keys.max
+        return nil unless _d = @data[_y][_m].keys.max
+        Date.new(_y.to_i, _m.to_i, _d.to_i)
       end
 
       # Private methods
       private
       def data_for(date)
+        return nil if date.nil?
+        date = normalize_date(date)
         @data.try(:[], date.year.to_s).try(:[], date.month.to_s).try(:[], date.day.to_s) || 0
       end
 
       def update_data(value, date)
+        return nil if date.nil?
+        date = normalize_date(date)
         [:year, :month].inject(@data) { |data, period|
           data[date.send(period).to_s] ||= {}
         }
@@ -117,9 +151,19 @@ module Mongoid  #:nodoc:
       def date_literal(d);  "#{d.year}.#{d.month}.#{d.day}"; end
 
       def update_hash(num, date)
+        date = normalize_date(date)
         {
           "#{@for_data}.#{date_literal(date)}" => num
         }
+      end
+
+      def normalize_date(date)
+        case date
+        when String
+          Date.parse(date)
+        else
+          date
+        end
       end
 
       # WARNING: This is +only+ for debugging pourposes (rspec y tal)

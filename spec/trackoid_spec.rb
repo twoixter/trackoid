@@ -9,7 +9,6 @@ class Test
 end
 
 describe Mongoid::Tracking do
-
   before(:all) do
     @trackoid_version = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
   end
@@ -38,7 +37,6 @@ describe Mongoid::Tracking do
   end
 
   describe "when creating a new field with stats" do
-
     before(:all) do
       @mock = Test.new
     end
@@ -96,11 +94,9 @@ describe Mongoid::Tracking do
     it "should not be aggregated" do
       @mock.aggregated?.should be_false
     end
-
   end
   
   describe "when using a model in the database" do
-    
     before(:all) do
       Test.delete_all
       Test.create(:name => "test")
@@ -143,10 +139,84 @@ describe Mongoid::Tracking do
       @mock.visits.last_days.should == [0, 0, 0, 0, 0, 2, 2]
     end
 
+    it "string dates should work" do
+      @mock.visits.inc("2010-07-11")
+      @mock.visits.on("2010-07-11").should == 1
+    end
+
+    it "should give the first date with first_date" do
+      @mock.visits.first_date.should == Date.parse("2010-07-11")
+    end
+
+    it "should give the last date with last_date" do
+      @mock.visits.last_date.should == Date.today
+    end
+
+    it "should give the first value" do
+      @mock.visits.first.should == 1
+    end
+
+    it "should give the last value" do
+      @mock.visits.last.should == 2
+    end
+  end
+
+  describe "Testing accessors with an empty model" do
+    before do
+      Test.delete_all
+      Test.create(:name => "test")
+      @object_id = Test.first.id
+      @mock = Test.first
+    end
+
+    it "should return nil for .first_date" do
+      @mock.visits.first_date.should be_nil
+    end
+
+    it "should return nil for .last_date" do
+      @mock.visits.last_date.should be_nil
+    end
+
+    it "should return nil for .first" do
+      @mock.visits.first.should be_nil
+    end
+
+    it "should return nil for .last" do
+      @mock.visits.last.should be_nil
+    end
+
+    it "should return nil for .all" do
+      @mock.visits.all.should be_nil
+    end
+  end
+
+  describe "Testing new range accessors with an empty model" do
+    before do
+      Test.delete_all
+      Test.create(:name => "test")
+      @object_id = Test.first.id
+      @mock = Test.first
+    end
+
+    it "should return the correct values for .all" do
+      @mock.visits.set(1, "2010-07-11")
+      @mock.visits.set(2, "2010-07-12")
+      @mock.visits.set(3, "2010-07-13")
+      
+      @mock.visits.all.should == [1, 2, 3]
+    end
+
+    it "should return the correct values for .all (Take II)" do
+      @mock.visits.set(5, "2010-07-01")
+      @mock.visits.set(10, "2010-07-30")
+    
+      @mock.visits.all.should == [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+      @mock.visits.last.should == 10
+      @mock.visits.first.should == 5
+    end
   end
 
   context "testing accessor operations without reloading models" do
-
     before(:all) do
       Test.delete_all
       Test.create(:name => "test")
@@ -195,15 +265,10 @@ describe Mongoid::Tracking do
       # We have data for today as previous tests populated the visits field
       @mock.visits.on(Date.parse("2010-04-30")..Date.parse("2010-05-02")).should == [0, 10, 0]
     end
-
-
   end
 
-
-
   context "regression test for github issues" do
-    
-    it "should not raise undefined method [] for nil:NilClass for objects already saved" do
+    it "should not raise undefined method [] for nil:NilClass when adding a new track into an existing object" do
       class TestModel
         include Mongoid::Document
         include Mongoid::Tracking
@@ -220,7 +285,5 @@ describe Mongoid::Tracking do
       tm.something.inc
       tm.something.today.should == 1
     end
-
   end
-
 end
