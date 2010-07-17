@@ -85,22 +85,24 @@ module Mongoid  #:nodoc:
         # Defines the aggregation model. It checks for class name conflicts
         def define_aggregate_model
           raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined?
-          parent_name = self.name.underscore
+          parent = self
           define_klass do
             include Mongoid::Document
             include Mongoid::Tracking
             
             # Make the relation to the original class
-            belongs_to_related parent_name.to_sym, :class_name => parent_name.camelize
+            belongs_to_related parent.name.demodulize.underscore.to_sym, :class_name => parent.name
 
             # Internal fields to track aggregation token and keys
             field :ns,  :type => String
             field :key, :type => String
-            index [["#{parent_name}_id".to_sym, Mongo::ASCENDING], [:ns, Mongo::ASCENDING], [:key, Mongo::ASCENDING]],
-                  :unique => true, :background => true
+            index [[parent.name.foreign_key.to_sym, Mongo::ASCENDING],
+                   [:ns, Mongo::ASCENDING],
+                   [:key, Mongo::ASCENDING]],
+                    :unique => true, :background => true
 
             # Include parent tracking data.
-            parent_name.camelize.constantize.tracked_fields.each {|track_field| track track_field }
+            parent.tracked_fields.each {|track_field| track track_field }
           end
           self.aggregate_klass = internal_aggregates_name.constantize
         end
