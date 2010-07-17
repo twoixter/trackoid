@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{trackoid}
-  s.version = "0.1.6"
+  s.version = "0.1.7"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jose Miguel Perez"]
-  s.date = %q{2010-07-16}
+  s.date = %q{2010-07-17}
   s.description = %q{Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability}
   s.email = %q{josemiguel@perezruiz.com}
   s.extra_rdoc_files = [
