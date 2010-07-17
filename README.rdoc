@@ -187,13 +187,15 @@ For comparison, this README is already 8.5Kb in size.
 
 = Revision History
 
-0.1.6 - Enabled support for String dates in operators. This string date must
-        be DateTime parseable.
-        For example:  @spain.world_cups.inc("2010-07-11")
-      - Normalized Date and DateTime objects to use only Date methods.
-      - Added "first" / "first_date" / "last" / "last_date" accessors.
-      - Added "all" accessor.
+  0.1.7 - Maintenance Release: A little error with the index on aggregated fields
 
-0.1.5 - Added support for namespaced models and aggregations
-      - Enabled "set" operations on aggregates
+  0.1.6 - Enabled support for String dates in operators. This string date must
+          be DateTime parseable.
+          For example:  @spain.world_cups.inc("2010-07-11")
+        - Normalized Date and DateTime objects to use only Date methods.
+        - Added "first" / "first_date" / "last" / "last_date" accessors.
+        - Added "all" accessor.
+
+  0.1.5 - Added support for namespaced models and aggregations
+        - Enabled "set" operations on aggregates
 

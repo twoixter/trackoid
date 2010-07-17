@@ -25,7 +25,7 @@ module Mongoid  #:nodoc:
         #
         # <tt>class Page</tt>
         # <tt>  include Mongoid::Document</tt>
-        # <tt>  include Mongoid::Document</tt>
+        # <tt>  include Mongoid::Tracking</tt>
         # <tt>  track :visits</tt>
         # <tt>  aggregate :browsers do |b|</tt>
         # <tt>    b.split(" ").first</tt>
@@ -39,7 +39,7 @@ module Mongoid  #:nodoc:
         # <tt>belongs_to :page</tt>
         # <tt>field :ns, :type => String</tt>
         # <tt>field :key, :type => String</tt>
-        # <tt>index [:ns, :key], :unique => true</tt>
+        # <tt>index [:page_id, :ns, :key], :unique => true</tt>
         # <tt>track :[original_parent_tracking_data]</tt>
         # <tt>track :...</tt>
         #
@@ -96,7 +96,8 @@ module Mongoid  #:nodoc:
             # Internal fields to track aggregation token and keys
             field :ns,  :type => String
             field :key, :type => String
-            index [[:ns, Mongo::ASCENDING], [:key, Mongo::ASCENDING]], :unique => true, :background => true
+            index [["#{parent_name}_id".to_sym, Mongo::ASCENDING], [:ns, Mongo::ASCENDING], [:key, Mongo::ASCENDING]],
+                  :unique => true, :background => true
 
             # Include parent tracking data.
             parent_name.camelize.constantize.tracked_fields.each {|track_field| track track_field }
