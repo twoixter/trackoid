@@ -89,7 +89,7 @@ module Mongoid  #:nodoc:
           define_klass do
             include Mongoid::Document
             include Mongoid::Tracking
-            
+
             # Make the relation to the original class
             belongs_to_related parent.name.demodulize.underscore.to_sym, :class_name => parent.name
 

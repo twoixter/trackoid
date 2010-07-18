@@ -187,6 +187,11 @@ For comparison, this README is already 8.5Kb in size.
 
 = Revision History
 
+  0.1.9 - Refactored TrackerAggregates to include all accessor methods
+          (all, last, first, etc.)
+
+  0.1.8 - Another maintenance release. Sorry. :-)
+
   0.1.7 - Maintenance Release: A little error with the index on aggregated fields
 
   0.1.6 - Enabled support for String dates in operators. This string date must

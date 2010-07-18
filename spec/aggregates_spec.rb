@@ -21,11 +21,12 @@ class SecondTestModel
   include Mongoid::Tracking
 
   field :name   # Dummy field
-  track :visits
+  track :something
 
-  aggregate :browsers do
-    "Chrome".downcase
-  end
+  aggregate :aggregate_one do 1 end
+  aggregate :aggregate_two do "p" end
+  aggregate :aggregate_three do BSON::ObjectID.new("4c4121857bc3cd0d78cb65b2") end
+  aggregate :aggregate_four do Time.now end
 end
 
 describe Mongoid::Tracking::Aggregates do
@@ -150,10 +151,35 @@ describe Mongoid::Tracking::Aggregates do
     }.should raise_error Mongoid::Errors::ClassAlreadyDefined
   end
 
-  describe "when tracking a model with aggregation data" do
+  describe "testing different object class for aggregation key" do
+    before do
+      SecondTestModel.all.map(&:destroy)
+      SecondTestModel.create(:name => "test")
+      @object_id = SecondTestModel.first.id
+      @mock = SecondTestModel.find(@object_id)
+    end
+    
+    it "should correctly save all aggregation keys as strings (inc)" do
+      @mock.something("test").inc
+      @mock.something.aggregate_one.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_two.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_three.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_four.collection.first.key.is_a?(String).should be_true
+    end
 
+    it "should correctly save all aggregation keys as strings (set)" do
+      @mock.something("test").set(5)
+      @mock.something.aggregate_one.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_two.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_three.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_four.collection.first.key.is_a?(String).should be_true
+    end
+
+  end
+
+  describe "when tracking a model with aggregation data" do
     before(:all) do
-      TestModel.delete_all
+      TestModel.all.map(&:destroy)
       TestModel.create(:name => "test")
       @object_id = TestModel.first.id
     end
@@ -216,7 +242,7 @@ describe Mongoid::Tracking::Aggregates do
       @mock.visits.today.should == 5
     end
 
-    it "let's chek what happens when sorting the best browser..." do
+    it "let's check what happens when sorting the best browser..." do
       @mock.visits("Google Chrome").inc
       @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 6]]
       @mock.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 6]
@@ -232,15 +258,69 @@ describe Mongoid::Tracking::Aggregates do
       visits_today_with_browser = @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }
       visits_today.should == visits_today_with_browser
     end
-
   end
 
+  describe "Testing all accessors" do
+    before do
+      TestModel.all.map(&:destroy)
+      TestModel.create(:name => "test")
+      @object_id = TestModel.first.id
+      @mock = TestModel.first
 
-  # it "should print methods && their classes to stdout" do
-  #   TestModel.methods.sort.each {|x|
-  #     puts "#{x}"
-  #   }
-  #   should be_true
-  # end
+      # For 'first' values
+      @mock.visits("Mozilla Firefox").set(1, "2010-07-11")
+      @mock.visits("Google Chrome").set(2, "2010-07-12")
+      @mock.visits("Internet Explorer").set(3, "2010-07-13")
+      
+      # For 'last' values
+      @mock.visits("Mozilla Firefox").set(4, "2010-07-14")
+      @mock.visits("Google Chrome").set(5, "2010-07-15")
+      @mock.visits("Internet Explorer").set(6, "2010-07-16")
+    end
 
+    it "should return the correct values for .all" do
+      @mock.visits.all.should == [1, 2, 3, 4, 5, 6]
+    end
+    
+    it "should return the all values for every aggregate" do
+      @mock.visits.browsers.all.should == [
+        ["mozilla",  [1, 0, 0, 4]],
+        ["google",   [2, 0, 0, 5]],
+        ["internet", [3, 0, 0, 6]]
+      ]
+    end
+    
+    it "should return the correct first_date for every aggregate" do
+      @mock.visits.browsers.first_date.should == [
+        ["mozilla",  Date.parse("2010-07-11")],
+        ["google",   Date.parse("2010-07-12")],
+        ["internet", Date.parse("2010-07-13")]
+      ]
+    end
+
+    it "should return the correct last_date for every aggregate" do
+      @mock.visits.browsers.last_date.should == [
+        ["mozilla",  Date.parse("2010-07-14")],
+        ["google",   Date.parse("2010-07-15")],
+        ["internet", Date.parse("2010-07-16")]
+      ]
+    end
+
+    it "should return the first value for aggregates" do
+      @mock.visits.browsers.first.should == [
+        ["mozilla",  1],
+        ["google",   2],
+        ["internet", 3]
+      ]
+    end
+
+    it "should return the last value for aggregates" do
+      @mock.visits.browsers.last.should == [
+        ["mozilla",  4],
+        ["google",   5],
+        ["internet", 6]
+      ]
+    end
+    
+  end
 end

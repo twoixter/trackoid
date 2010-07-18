@@ -35,18 +35,22 @@ module Mongoid  #:nodoc:
       def add(how_much = 1, date = Date.today)
         raise Errors::ModelNotSaved, "Can't update a new record. Save first!" if @owner.new_record?
         update_data(data_for(date) + how_much, date)
-        @owner.collection.update( @owner._selector,
+        @owner.collection.update(
+            @owner._selector,
             { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-            :upsert => true)
+            :upsert => true
+        )
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update( selector,
+          @owner.aggregate_klass.collection.update(
+              selector,
               { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-              :upsert => true)
+              :upsert => true
+          )
         end
       end
 
@@ -61,18 +65,22 @@ module Mongoid  #:nodoc:
       def set(how_much, date = Date.today)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
-        @owner.collection.update( @owner._selector,
+        @owner.collection.update(
+            @owner._selector,
             { "$set" => update_hash(how_much, date) },
-            :upsert => true)
+            :upsert => true
+        )
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update( selector,
+          @owner.aggregate_klass.collection.update(
+              selector,
               { "$set" => update_hash(how_much, date) },
-              :upsert => true)
+              :upsert => true
+          )
         end
       end
 
