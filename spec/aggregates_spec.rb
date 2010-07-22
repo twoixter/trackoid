@@ -161,18 +161,18 @@ describe Mongoid::Tracking::Aggregates do
     
     it "should correctly save all aggregation keys as strings (inc)" do
       @mock.something("test").inc
-      @mock.something.aggregate_one.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_two.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_three.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_four.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_one.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_two.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_three.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_four.first.key.is_a?(String).should be_true
     end
 
     it "should correctly save all aggregation keys as strings (set)" do
       @mock.something("test").set(5)
-      @mock.something.aggregate_one.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_two.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_three.collection.first.key.is_a?(String).should be_true
-      @mock.something.aggregate_four.collection.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_one.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_two.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_three.first.key.is_a?(String).should be_true
+      @mock.something.aggregate_four.first.key.is_a?(String).should be_true
     end
 
   end
@@ -217,13 +217,18 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should have 0 visits yesterday" do
-      @mock.visits.browsers.today.should == [["mozilla", 1]]
-      @mock.visits.referers.today.should == [["firefox", 1]]
+      @mock.visits.browsers.yesterday.should == [["mozilla", 0]]
+      @mock.visits.referers.yesterday.should == [["firefox", 0]]
     end
 
     it "should have 1 visits last 7 days" do
       @mock.visits.browsers.last_days(7).should == [["mozilla", [0, 0, 0, 0, 0, 0, 1]]]
       @mock.visits.referers.last_days(7).should == [["firefox", [0, 0, 0, 0, 0, 0, 1]]]
+    end
+
+    it "should work also for arbitrary days" do
+      @mock.visits.browsers.last_days(15).should == [["mozilla", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]]]
+      @mock.visits.referers.last_days(15).should == [["firefox", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]]]
     end
 
     it "should work adding 1 visit with different aggregation data" do
@@ -233,6 +238,10 @@ describe Mongoid::Tracking::Aggregates do
       
       # Just for testing array manipulations
       @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
+    end
+
+    it "should return only values when specifying the aggregation key" do
+      @mock.visits.browsers("mozilla").today.should == 1
     end
 
     it "should work also with set" do
@@ -278,12 +287,12 @@ describe Mongoid::Tracking::Aggregates do
       @mock.visits("Internet Explorer").set(6, "2010-07-16")
     end
 
-    it "should return the correct values for .all" do
-      @mock.visits.all.should == [1, 2, 3, 4, 5, 6]
+    it "should return the correct values for .all_values" do
+      @mock.visits.all_values.should == [1, 2, 3, 4, 5, 6]
     end
     
     it "should return the all values for every aggregate" do
-      @mock.visits.browsers.all.should == [
+      @mock.visits.browsers.all_values.should == [
         ["mozilla",  [1, 0, 0, 4]],
         ["google",   [2, 0, 0, 5]],
         ["internet", [3, 0, 0, 6]]
@@ -307,7 +316,7 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should return the first value for aggregates" do
-      @mock.visits.browsers.first.should == [
+      @mock.visits.browsers.first_value.should == [
         ["mozilla",  1],
         ["google",   2],
         ["internet", 3]
@@ -315,7 +324,7 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should return the last value for aggregates" do
-      @mock.visits.browsers.last.should == [
+      @mock.visits.browsers.last_value.should == [
         ["mozilla",  4],
         ["google",   5],
         ["internet", 6]

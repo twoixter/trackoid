@@ -86,14 +86,6 @@ module Mongoid  #:nodoc:
 
 
       # Access methods
-      def first
-        data_for(first_date)
-      end
-
-      def last
-        data_for(last_date)
-      end
-      
       def today
         data_for(Date.today)
       end
@@ -102,6 +94,14 @@ module Mongoid  #:nodoc:
         data_for(Date.today - 1)
       end
 
+      def first_value
+        data_for(first_date)
+      end
+
+      def last_value
+        data_for(last_date)
+      end
+      
       def last_days(how_much = 7)
         return [today] unless how_much > 0
         date, values = Date.today, []
@@ -114,7 +114,7 @@ module Mongoid  #:nodoc:
         data_for(date)
       end
 
-      def all
+      def all_values
         on(first_date..last_date) if first_date
       end
 
@@ -122,6 +122,7 @@ module Mongoid  #:nodoc:
       def first_date
         # We are guaranteed _m and _d to exists unless @data is a malformed
         # hash, so we need to do this nasty "return nil", sorry...
+        # TODO: I'm open to change this to a cleaner algorithm :-)
         return nil unless _y = @data.keys.min
         return nil unless _m = @data[_y].keys.min
         return nil unless _d = @data[_y][_m].keys.min
@@ -131,6 +132,7 @@ module Mongoid  #:nodoc:
       def last_date
         # We are guaranteed _m and _d to exists unless @data is a malformed
         # hash, so we need to do this nasty "return nil", sorry...
+        # TODO: I'm open to change this to a cleaner algorithm :-)
         return nil unless _y = @data.keys.max
         return nil unless _m = @data[_y].keys.max
         return nil unless _d = @data[_y][_m].keys.max

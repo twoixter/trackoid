@@ -153,11 +153,11 @@ describe Mongoid::Tracking do
     end
 
     it "should give the first value" do
-      @mock.visits.first.should == 1
+      @mock.visits.first_value.should == 1
     end
 
     it "should give the last value" do
-      @mock.visits.last.should == 2
+      @mock.visits.last_value.should == 2
     end
   end
 
@@ -177,16 +177,16 @@ describe Mongoid::Tracking do
       @mock.visits.last_date.should be_nil
     end
 
-    it "should return nil for .first" do
-      @mock.visits.first.should be_nil
+    it "should return nil for .first_date" do
+      @mock.visits.first_value.should be_nil
     end
 
-    it "should return nil for .last" do
-      @mock.visits.last.should be_nil
+    it "should return nil for .last_value" do
+      @mock.visits.last_value.should be_nil
     end
 
-    it "should return nil for .all" do
-      @mock.visits.all.should be_nil
+    it "should return nil for .all_values" do
+      @mock.visits.all_values.should be_nil
     end
   end
 
@@ -198,21 +198,21 @@ describe Mongoid::Tracking do
       @mock = Test.first
     end
 
-    it "should return the correct values for .all" do
+    it "should return the correct values for .all_values" do
       @mock.visits.set(1, "2010-07-11")
       @mock.visits.set(2, "2010-07-12")
       @mock.visits.set(3, "2010-07-13")
       
-      @mock.visits.all.should == [1, 2, 3]
+      @mock.visits.all_values.should == [1, 2, 3]
     end
 
-    it "should return the correct values for .all (Take II)" do
+    it "should return the correct values for .all_values (Take II)" do
       @mock.visits.set(5, "2010-07-01")
       @mock.visits.set(10, "2010-07-30")
     
-      @mock.visits.all.should == [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
-      @mock.visits.last.should == 10
-      @mock.visits.first.should == 5
+      @mock.visits.all_values.should == [5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10]
+      @mock.visits.last_value.should == 10
+      @mock.visits.first_value.should == 5
     end
   end
 

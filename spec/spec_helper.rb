@@ -22,6 +22,6 @@ end
 Spec::Runner.configure do |config|
   config.mock_with :mocha
   config.before :suite do
-    Mongoid.master.collections.each(&:drop)
+    Mongoid.master.collections.reject { |c| c.name =~ /^system\./ }.each(&:drop)
   end
 end

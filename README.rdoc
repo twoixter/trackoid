@@ -187,20 +187,35 @@ For comparison, this README is already 8.5Kb in size.
 
 = Revision History
 
-  0.1.9 - Refactored TrackerAggregates to include all accessor methods
-          (all, last, first, etc.)
+  0.1.10 -  Renamed accessor methods from "all", "last", "first" to
+            "all_values", "first_value" and "last_value" so as not to
+            conflict with traditional ActiveRecord accessors.
+         -  Aggregate methods with a key returns a single instance, not an
+            Array. For example:
+            
+              @page.visits.browser("mozilla").today
+              # Returns now a number instead of an Array
 
-  0.1.8 - Another maintenance release. Sorry. :-)
+         -  Arguments are now passed thru aggregator accessors. For example:
+         
+              @page.visits.brosers("mozilla").last_days(15)
+              # Should correctly return now an array with 15 elements.
 
-  0.1.7 - Maintenance Release: A little error with the index on aggregated fields
+  0.1.9  -  Refactored TrackerAggregates to include all accessor methods
+            (all, last, first, etc.)
 
-  0.1.6 - Enabled support for String dates in operators. This string date must
-          be DateTime parseable.
-          For example:  @spain.world_cups.inc("2010-07-11")
-        - Normalized Date and DateTime objects to use only Date methods.
-        - Added "first" / "first_date" / "last" / "last_date" accessors.
-        - Added "all" accessor.
+  0.1.8  -  Another maintenance release. Sorry. :-)
 
-  0.1.5 - Added support for namespaced models and aggregations
-        - Enabled "set" operations on aggregates
+  0.1.7  -  Maintenance Release: A little error with the index on aggregated
+            fields
+
+  0.1.6  -  Enabled support for String dates in operators. This string date
+            must be DateTime parseable.
+            For example:  @spain.world_cups.inc("2010-07-11")
+         -  Normalized Date and DateTime objects to use only Date methods.
+         -  Added "first" / "first_date" / "last" / "last_date" accessors.
+         -  Added "all" accessor.
+
+  0.1.5  -  Added support for namespaced models and aggregations
+         -  Enabled "set" operations on aggregates
 
