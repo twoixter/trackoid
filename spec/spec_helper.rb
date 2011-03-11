@@ -7,8 +7,9 @@ gem 'mocha', '>= 0.9.8'
 require 'mocha'
 require 'mongoid'
 require 'trackoid'
-require 'spec'
-require 'spec/autorun'
+require 'bson'
+require 'rspec'
+require 'rspec/autorun'
 
 Mongoid.configure do |config|
   name = "trackoid_test"
@@ -16,10 +17,9 @@ Mongoid.configure do |config|
   port = "27017"
 #  config.master = Mongo::Connection.new(host, port, :logger => Logger.new(STDOUT)).db(name)
   config.master = Mongo::Connection.new.db(name)
-  config.use_object_ids = true
 end
 
-Spec::Runner.configure do |config|
+RSpec.configure do |config|
   config.mock_with :mocha
   config.before :suite do
     Mongoid.master.collections.reject { |c| c.name =~ /^system\./ }.each(&:drop)

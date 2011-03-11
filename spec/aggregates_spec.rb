@@ -25,7 +25,7 @@ class SecondTestModel
 
   aggregate :aggregate_one do 1 end
   aggregate :aggregate_two do "p" end
-  aggregate :aggregate_three do BSON::ObjectID.new("4c4121857bc3cd0d78cb65b2") end
+  aggregate :aggregate_three do BSON::ObjectId("4c4121857bc3cd0d78cb65b2") end
   aggregate :aggregate_four do Time.now end
 end
 

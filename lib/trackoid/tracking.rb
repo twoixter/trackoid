@@ -60,7 +60,7 @@ module Mongoid #:nodoc:
           raise NoMethodError
         end
 
-        define_method("#{name}_data=") do
+        define_method("#{name}_data=") do |m|
           raise NoMethodError
         end
         

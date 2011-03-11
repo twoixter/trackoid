@@ -34,6 +34,14 @@ module Mongoid  #:nodoc:
       # Update methods
       def add(how_much = 1, date = Date.today)
         raise Errors::ModelNotSaved, "Can't update a new record. Save first!" if @owner.new_record?
+        return if how_much == 0
+
+        # Note that the following #update_data method updates our local data
+        # and the current value might differ from the actual value on the
+        # database. Basically, what we do is update our own copy as a cache
+        # but send the command to atomically update the database: we don't
+        # read the actual value in return so that we save round trip delays.
+        #
         update_data(data_for(date) + how_much, date)
         @owner.collection.update(
             @owner._selector,
