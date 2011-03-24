@@ -113,7 +113,6 @@ Imagine you need a web service to track the temperature of all rooms of a nuclea
       include Mongoid::Tracking
       
       track :temperature
-      
     end
 
 
@@ -124,18 +123,19 @@ Imagine you need a web service to track the temperature of all rooms of a nuclea
       @room.temperature.set(current_temperature)
     end
 
-So, you don't need only to increment or decrement a value, yuo can also set an specific value. Now it's easy to know the maximum temperature of the last 30 days for a room:
+So, you are not restricted into incrementing or decrementing a value, you can also store an specific value. Now it's easy to know the maximum temperature of the last 30 days for a room:
 
     @room.temperature.last_days(30).max
 
 
 = How does it works?
 
-Trakoid works by embedding date tracking information into models. The date tracking information is limited by a granularity of days for now. As the project evolves and we test performance, my idea is to add finer granularity of hours and perhaps, minutes.
+Trakoid works by embedding date tracking information into the models. The date tracking information is limited by a granularity of days, but you can use aggregates if you absolutely need hour or minutes granularity.
+
 
 == Scalability and performance
 
-Trackoid is made from the ground up to take advantage of the great scalability features of MongoDB. Trackoid uses "upsert" operations, bypassing Mongoid controllers so that it can be used in a distributed system without data loses. This is perfect for a cloud application.
+Trackoid is made from the ground up to take advantage of the great scalability features of MongoDB. Trackoid uses "upsert" operations, bypassing Mongoid controllers so that it can be used in a distributed system without data loss. This is perfect for a cloud hosted SaaS application!
 
 The problem with a distributed system for tracking analytical information is the atomicity of operations. Imagine you must increment visits information from several servers at the same time and how you would do it. With an SQL model, this is somewhat easy because the tradittional approaches for doing this only require INSERT or UPDATE operations that are atomic by nature. But for a Document Oriented Database like MongoDB you need some kind of special operations. MongoDB uses "upsert" commands, which stands for "update or insert". That is, modify this and create if not exists.
 
@@ -145,6 +145,7 @@ Trackoid issues "upsert" commands directly to the MongoDB driver, with the follo
 
 
   collection.update( {_id:ObjectID}, {$inc: {visits.2010.05.30: 1} }, true )
+
 
 This way, the collection can receive multiple incremental operations without requiring additional logic for locking or something. The only drawback is that you will not have realtime data in your model. For example:
 
@@ -182,10 +183,17 @@ MongoDB stores information in BSON format as a binary representation of a JSON s
 
 A year full of statistical data takes only 2.8Kb, if you store integers. If your statistical data includes floats, a year full of information takes 4.3Kb. I said "a year full of data" because Trackoid does not store information for days without data.
 
-For comparison, this README is already 8.5Kb in size.
+For comparison, this README is already 8.5Kb in size...
 
 
 = Revision History
+  0.1.12 -  Previously known as "accessors" methods, now they are promoted as
+            "Reader" methods and now they live in its own Module.
+            (Accessor methods are those like "today", "on", "last_days", etc,
+            and now they are called "Readers" to avoid confussion with real
+            accessors like "attr_accessors"...)
+
+  0.1.11 -  Updated Gemspec for a new version of Jeweler
 
   0.1.10 -  Renamed accessor methods from "all", "last", "first" to
             "all_values", "first_value" and "last_value" so as not to
