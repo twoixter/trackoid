@@ -20,11 +20,9 @@ module Mongoid  #:nodoc:
         @criteria.send(name)
       end
 
-      # Define all accessors here. Basically we are delegating to the Track
+      # Define all readers here. Basically we are delegating to the Track
       # object for every object in the criteria
-      [ :today, :yesterday, :last_days, :all_values, :first_value, :last_value,
-        :first_date, :last_date
-      ].each {|name|
+      Readers.instance_methods.each {|name|
         define_method(name) do |*args|
           return nil unless @track_field
           if @key

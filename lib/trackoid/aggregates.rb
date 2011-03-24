@@ -10,10 +10,8 @@ module Mongoid  #:nodoc:
           class_inheritable_accessor :aggregate_fields, :aggregate_klass
           self.aggregate_fields = {}
           self.aggregate_klass = nil
-          delegate :aggregate_fields,
-                   :aggregate_klass,
-                   :aggregated?,
-                      :to => "self.class"
+          delegate :aggregate_fields, :aggregate_klass, :aggregated?,
+                   :to => "self.class"
         end
       end
 
@@ -134,7 +132,7 @@ module Mongoid  #:nodoc:
         end
 
         def create_aggregation_accessors(name)
-          # Aggregation accessors in the model acts like a named scope
+          # Aggregation accessors in the model acts like a named scopes
           define_method(name) do |*args|
             TrackerAggregates.new(self, name, args)
           end
@@ -147,51 +145,8 @@ module Mongoid  #:nodoc:
             raise NoMethodError
           end
         end
-
       end
       
     end
-
-
-    # class Aggregate
-    #   include Mongoid::Document
-    # end
-    # 
-    # track :visits
-    # aggregate :browsers do
-    #   ["google"]
-    # end
-    # aggregate :referers do
-    #   ["domain.com"]
-    # end
-    # 
-    # 
-    # self.visits(agg).inc
-    # self.visits.today
-    # self.visits.browsers.today
-    #
-    # users
-    #   { _id: 32334333, name:"pepe", visits_data:{} }
-    # 
-    # users_aggregates
-    #   { _id: 11221223, data_for: 32334333, ns: "browsers", key: nil,  visits_data:{} }
-    #   { _id: 11223223, data_for: 32334333, ns: "browsers", key: "google",  visits_data:{} }
-    #   { _id: 11224432, data_for: 32334333, ns: "browsers", key: "firefox", visits_data:{} }
-    # 
-    # 
-    # class UsersAggregate
-    #   include Mongoid::Document
-    #   include Mongoid::Tracking
-    #   
-    #   belongs_to :users
-    #   field :ns
-    #   field :key
-    # 
-    #   track :visits
-    #   track :uniques
-    # end
-    # 
-    # 
-
   end
 end
