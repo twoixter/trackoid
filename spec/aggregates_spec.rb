@@ -158,7 +158,7 @@ describe Mongoid::Tracking::Aggregates do
       @object_id = SecondTestModel.first.id
       @mock = SecondTestModel.find(@object_id)
     end
-    
+
     it "should correctly save all aggregation keys as strings (inc)" do
       @mock.something("test").inc
       @mock.something.aggregate_one.first.key.is_a?(String).should be_true
@@ -174,7 +174,6 @@ describe Mongoid::Tracking::Aggregates do
       @mock.something.aggregate_three.first.key.is_a?(String).should be_true
       @mock.something.aggregate_four.first.key.is_a?(String).should be_true
     end
-
   end
 
   describe "when tracking a model with aggregation data" do
@@ -233,8 +232,8 @@ describe Mongoid::Tracking::Aggregates do
 
     it "should work adding 1 visit with different aggregation data" do
       @mock.visits("Google Chrome").inc
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 1]]
-      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 1]]
+      @mock.visits.browsers.today.should =~ [["mozilla", 1], ["google", 1]]
+      @mock.visits.referers.today.should =~ [["firefox", 1], ["chrome", 1]]
       
       # Just for testing array manipulations
       @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
@@ -246,26 +245,127 @@ describe Mongoid::Tracking::Aggregates do
 
     it "should work also with set" do
       @mock.visits("Google Chrome").set(5)
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 5]]
-      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 5]]
+      @mock.visits.browsers.today.should =~ [["mozilla", 1], ["google", 5]]
+      @mock.visits.referers.today.should =~ [["firefox", 1], ["chrome", 5]]
       @mock.visits.today.should == 5
     end
 
     it "let's check what happens when sorting the best browser..." do
       @mock.visits("Google Chrome").inc
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 6]]
+      @mock.visits.browsers.today.should =~ [["mozilla", 1], ["google", 6]]
       @mock.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 6]
     end
 
     it "should work without aggregation information" do
       @mock.visits.inc
-      @mock.visits.browsers.today.should == [["mozilla", 1], ["google", 6]]
-      @mock.visits.referers.today.should == [["firefox", 1], ["chrome", 6]]
-      
+      @mock.visits.browsers.today.should =~ [["mozilla", 1], ["google", 6]]
+      @mock.visits.referers.today.should =~ [["firefox", 1], ["chrome", 6]]
+
       # A more throughout test would check totals...
       visits_today = @mock.visits.today
       visits_today_with_browser = @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }
       visits_today.should == visits_today_with_browser
+    end
+  end
+
+  describe "When using reset method for aggregates" do
+    before do
+      TestModel.all.map(&:destroy)
+      TestModel.create(:name => "test")
+
+      @object_id = TestModel.first.id
+      @mock = TestModel.first
+
+      @mock.visits("Mozilla Firefox").set(1, "2010-07-11")
+      @mock.visits("Google Chrome").set(2, "2010-07-11")
+      @mock.visits("Internet Explorer").set(3, "2010-07-11")
+
+      @mock.visits("Mozilla Firefox").set(4, "2010-07-14")
+      @mock.visits("Google Chrome").set(5, "2010-07-14")
+      @mock.visits("Internet Explorer").set(6, "2010-07-14")
+
+      @mock.uniques("Mozilla Firefox").set(1, "2010-07-11")
+      @mock.uniques("Google Chrome").set(2, "2010-07-11")
+      @mock.uniques("Internet Explorer").set(3, "2010-07-11")
+
+      @mock.uniques("Mozilla Firefox").set(4, "2010-07-14")
+      @mock.uniques("Google Chrome").set(5, "2010-07-14")
+      @mock.uniques("Internet Explorer").set(6, "2010-07-14")
+    end
+
+    it "should have the correct values when using a value" do
+      @mock.visits.reset(99, "2010-07-14")
+
+      @mock.visits.on("2010-07-14").should == 99
+      @mock.visits.browsers.all_values.should =~ [
+        ["mozilla",  [1, 0, 0, 99]],
+        ["google",   [2, 0, 0, 99]],
+        ["internet", [3, 0, 0, 99]]
+      ]
+      @mock.visits.referers.all_values.should =~ [
+        ["firefox",  [1, 0, 0, 99]],
+        ["chrome",   [2, 0, 0, 99]],
+        ["explorer", [3, 0, 0, 99]]
+      ]
+    end
+
+    it "should delete the values when using nil" do
+      @mock.visits.reset(nil, "2010-07-14")
+
+      @mock.visits.on("2010-07-14").should == 0
+      @mock.visits.browsers.all_values.should =~ [
+        ["mozilla",  [1]],
+        ["google",   [2]],
+        ["internet", [3]]
+      ]
+      @mock.visits.referers.all_values.should =~ [
+        ["firefox",  [1]],
+        ["chrome",   [2]],
+        ["explorer", [3]]
+      ]
+    end
+
+    it "erase method sould also work" do
+      @mock.visits.erase("2010-07-14")
+
+      @mock.visits.on("2010-07-14").should == 0
+      @mock.visits.browsers.all_values.should =~ [
+        ["mozilla",  [1]],
+        ["google",   [2]],
+        ["internet", [3]]
+      ]
+    end
+
+    it "should reset the correct tracking fields" do
+      @mock.visits.reset(99, "2010-07-14")
+
+      @mock.uniques.on("2010-07-14").should == 6
+      @mock.uniques.browsers.all_values.should =~ [
+        ["mozilla",  [1, 0, 0, 4]],
+        ["google",   [2, 0, 0, 5]],
+        ["internet", [3, 0, 0, 6]]
+      ]
+      @mock.uniques.referers.all_values.should =~ [
+        ["firefox",  [1, 0, 0, 4]],
+        ["chrome",   [2, 0, 0, 5]],
+        ["explorer", [3, 0, 0, 6]]
+      ]
+    end
+
+    it "should erase the correct tracking fields" do
+      @mock.visits.erase("2010-07-14")
+
+      @mock.uniques.on("2010-07-14").should == 6
+      @mock.uniques.browsers.all_values.should =~ [
+        ["mozilla",  [1, 0, 0, 4]],
+        ["google",   [2, 0, 0, 5]],
+        ["internet", [3, 0, 0, 6]]
+      ]
+      @mock.uniques.referers.all_values.should =~ [
+        ["firefox",  [1, 0, 0, 4]],
+        ["chrome",   [2, 0, 0, 5]],
+        ["explorer", [3, 0, 0, 6]]
+      ]
     end
   end
 
@@ -280,7 +380,7 @@ describe Mongoid::Tracking::Aggregates do
       @mock.visits("Mozilla Firefox").set(1, "2010-07-11")
       @mock.visits("Google Chrome").set(2, "2010-07-12")
       @mock.visits("Internet Explorer").set(3, "2010-07-13")
-      
+
       # For 'last' values
       @mock.visits("Mozilla Firefox").set(4, "2010-07-14")
       @mock.visits("Google Chrome").set(5, "2010-07-15")
@@ -290,17 +390,17 @@ describe Mongoid::Tracking::Aggregates do
     it "should return the correct values for .all_values" do
       @mock.visits.all_values.should == [1, 2, 3, 4, 5, 6]
     end
-    
+
     it "should return the all values for every aggregate" do
-      @mock.visits.browsers.all_values.should == [
+      @mock.visits.browsers.all_values.should =~ [
         ["mozilla",  [1, 0, 0, 4]],
         ["google",   [2, 0, 0, 5]],
         ["internet", [3, 0, 0, 6]]
       ]
     end
-    
+
     it "should return the correct first_date for every aggregate" do
-      @mock.visits.browsers.first_date.should == [
+      @mock.visits.browsers.first_date.should =~ [
         ["mozilla",  Date.parse("2010-07-11")],
         ["google",   Date.parse("2010-07-12")],
         ["internet", Date.parse("2010-07-13")]
@@ -308,7 +408,7 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should return the correct last_date for every aggregate" do
-      @mock.visits.browsers.last_date.should == [
+      @mock.visits.browsers.last_date.should =~ [
         ["mozilla",  Date.parse("2010-07-14")],
         ["google",   Date.parse("2010-07-15")],
         ["internet", Date.parse("2010-07-16")]
@@ -316,7 +416,7 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should return the first value for aggregates" do
-      @mock.visits.browsers.first_value.should == [
+      @mock.visits.browsers.first_value.should =~ [
         ["mozilla",  1],
         ["google",   2],
         ["internet", 3]
@@ -324,12 +424,11 @@ describe Mongoid::Tracking::Aggregates do
     end
 
     it "should return the last value for aggregates" do
-      @mock.visits.browsers.last_value.should == [
+      @mock.visits.browsers.last_value.should =~ [
         ["mozilla",  4],
         ["google",   5],
         ["internet", 6]
       ]
     end
-    
   end
 end

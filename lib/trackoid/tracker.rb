@@ -76,8 +76,7 @@ module Mongoid  #:nodoc:
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
         @owner.collection.update(
-            @owner._selector,
-            { "$set" => update_hash(how_much, date) },
+            @owner._selector, { "$set" => update_hash(how_much, date) },
             :upsert => true
         )
         return unless @owner.aggregated?
@@ -87,9 +86,51 @@ module Mongoid  #:nodoc:
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, :ns => k, :key => token.to_s }
           @owner.aggregate_klass.collection.update(
-              selector,
-              { "$set" => update_hash(how_much, date) },
+              selector, { "$set" => update_hash(how_much, date) },
               :upsert => true
+          )
+        end
+      end
+
+      def reset(how_much, date = Date.today)
+        return erase(date) if how_much.nil?
+
+        # First, we use the default "set" for the tracking field
+        # This will also update one aggregate but... oh well...
+        set(how_much, date)
+
+        # Need to iterate over all aggregates and send an update or delete
+        # operations over all mongo records for this aggregate field
+        @owner.aggregate_fields.each do |(k,v)|
+          fk = @owner.class.name.to_s.foreign_key.to_sym
+          selector = { fk => @owner.id, :ns => k }
+          @owner.aggregate_klass.collection.update(
+              selector, { "$set" => update_hash(how_much, date) },
+              :upsert => true, :multi => true
+          )
+        end
+      end
+
+      def erase(date = Date.today)
+        raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
+
+        # For the in memory data, we just need to set it to nil
+        update_data(nil, date)
+        @owner.collection.update(
+            @owner._selector,
+            { "$unset" => update_hash(1, date) },
+            :upsert => true
+        )
+        return unless @owner.aggregated?
+
+        # Need to iterate over all aggregates and send an update or delete
+        # operations over all mongo records
+        @owner.aggregate_fields.each do |(k,v)|
+          fk = @owner.class.name.to_s.foreign_key.to_sym
+          selector = { fk => @owner.id, :ns => k }
+          @owner.aggregate_klass.collection.update(
+              selector, { "$unset" => update_hash(1, date) },
+              :upsert => true, :multi => true
           )
         end
       end
