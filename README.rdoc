@@ -187,6 +187,27 @@ For comparison, this README is already 8.5Kb in size...
 
 
 = Revision History
+
+  0.2.0  -  Added 'reset' and 'erase' methods to tracker fields:
+            * Reset does the same as "set" but also sets aggregate fields.
+
+              Example:
+              
+                A) model.value(aggregate_data).set(5)
+                B) model.value(aggregate_data).reset(5)
+                
+                A will set "5" to the 'value' and to the aggregate.
+                B will set "5" to the 'value' and all aggregates.
+                
+            * Erase resets the values in the mongo database. Note that this
+              is completely different of doing 'reset(0)'. (With erase you
+              can actually recall space from the database).
+
+         -  Trackoid now uses "unsafe" mongo update calls from the driver.
+            Note that despite the name, trackoid is absolutely safe, the only
+            diference is that 'update' simply now returns inmediately, without
+            waiting for the OK response from the database.
+
   0.1.12 -  Previously known as "accessors" methods, now they are promoted as
             "Reader" methods and now they live in its own Module.
             (Accessor methods are those like "today", "on", "last_days", etc,
@@ -198,14 +219,15 @@ For comparison, this README is already 8.5Kb in size...
   0.1.10 -  Renamed accessor methods from "all", "last", "first" to
             "all_values", "first_value" and "last_value" so as not to
             conflict with traditional ActiveRecord accessors.
+
          -  Aggregate methods with a key returns a single instance, not an
             Array. For example:
-            
+
               @page.visits.browser("mozilla").today
               # Returns now a number instead of an Array
 
          -  Arguments are now passed thru aggregator accessors. For example:
-         
+
               @page.visits.brosers("mozilla").last_days(15)
               # Should correctly return now an array with 15 elements.
 
@@ -219,7 +241,11 @@ For comparison, this README is already 8.5Kb in size...
 
   0.1.6  -  Enabled support for String dates in operators. This string date
             must be DateTime parseable.
-            For example:  @spain.world_cups.inc("2010-07-11")
+
+            Example:
+
+              @spain.world_cups.inc("2010-07-11")
+
          -  Normalized Date and DateTime objects to use only Date methods.
          -  Added "first" / "first_date" / "last" / "last_date" accessors.
          -  Added "all" accessor.
