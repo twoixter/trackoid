@@ -13,10 +13,20 @@ module Mongoid #:nodoc
 
     class AggregationAlreadyDefined < RuntimeError
       def initialize(klass, token)
+        @klass = klass
         @token = token
       end
       def message
-        "Aggregation '#{@token}' already defined for model #{klass}"
+        "Aggregation '#{@token}' already defined for model #{@klass}"
+      end
+    end
+
+    class AggregationNameDeprecated < RuntimeError
+      def initialize(token)
+        @token = token
+      end
+      def message
+        "Ussing aggregation name '#{@klass}' is deprecated. Please select another name."
       end
     end
 

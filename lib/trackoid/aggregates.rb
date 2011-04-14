@@ -2,6 +2,9 @@
 module Mongoid  #:nodoc:
   module Tracking #:nodoc:
     module Aggregates
+      
+      DEPRECATED_TOKENS = ['hour', 'hours']
+      
       # This module includes aggregate data extensions to Trackoid instances
       def self.included(base)
         base.class_eval do
@@ -55,8 +58,8 @@ module Mongoid  #:nodoc:
         # But you are encouraged to use Trackoid methods whenever possible.
         #
         def aggregate(name, &block)
-          raise Errors::AggregationAlreadyDefined.new(self.name, name) if
-              aggregate_fields.has_key? name
+          raise Errors::AggregationAlreadyDefined.new(self.name, name) if aggregate_fields.has_key? name
+          raise Errors::AggregationNameDeprecated.new(name) if DEPRECATED_TOKENS.include? name.to_s
 
           define_aggregate_model if aggregate_klass.nil?
           has_many_related internal_accessor_name(name), :class_name => aggregate_klass.to_s
@@ -83,6 +86,7 @@ module Mongoid  #:nodoc:
         # Defines the aggregation model. It checks for class name conflicts
         def define_aggregate_model
           raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined?
+
           parent = self
           define_klass do
             include Mongoid::Document

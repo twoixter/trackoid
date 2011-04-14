@@ -84,6 +84,16 @@ describe Mongoid::Tracking::Aggregates do
     }.should raise_error Mongoid::Errors::AggregationAlreadyDefined
   end
 
+  it "should raise error if we try to use 'hours' as aggregate" do
+    lambda {
+      class TestModel
+        aggregate :hours do
+          "(none)"
+        end
+      end
+    }.should raise_error Mongoid::Errors::AggregationNameDeprecated
+  end
+
   it "should have Mongoid accessors defined" do
     tm = TestModel.create(:name => "Dummy")
     tm.send(tm.class.send(:internal_accessor_name, "browsers")).class.should == Mongoid::Criteria
