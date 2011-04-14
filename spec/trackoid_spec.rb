@@ -109,6 +109,7 @@ describe Mongoid::Tracking do
 
     before do
       @mock = Test.find(@object_id)
+      @today = Time.now
     end
 
     it "should increment visits stats for today" do
@@ -122,12 +123,12 @@ describe Mongoid::Tracking do
     end
 
     it "should also work for yesterday" do
-      @mock.visits.inc(DateTime.now - 1)
+      @mock.visits.inc(@today - 1.day)
       @mock.visits.yesterday.should == 1
     end
 
     it "should also work for yesterday if adding another visit (for a total of 2)" do
-      @mock.visits.inc(DateTime.now - 1)
+      @mock.visits.inc(@today - 1.day)
       @mock.visits.yesterday.should == 2
     end
     
@@ -149,11 +150,16 @@ describe Mongoid::Tracking do
     end
 
     it "should give the first date with first_date" do
-      @mock.visits.first_date.should == Date.parse("2010-07-11")
+      t = Time.parse("2010-07-11")
+      f = @mock.visits.first_date
+      [f.year, f.month, f.day, f.hour].should == [t.year, t.month, t.day, t.hour]
     end
 
     it "should give the last date with last_date" do
-      @mock.visits.last_date.should == Date.today
+      future = @today + 1.month
+      @mock.visits.set(22, future)
+      f = @mock.visits.last_date
+      [f.year, f.month, f.day, f.hour].should == [future.year, future.month, future.day, future.hour]
     end
 
     it "should give the first value" do
@@ -161,7 +167,7 @@ describe Mongoid::Tracking do
     end
 
     it "should give the last value" do
-      @mock.visits.last_value.should == 2
+      @mock.visits.last_value.should == 22
     end
   end
 
@@ -183,9 +189,9 @@ describe Mongoid::Tracking do
     end
 
     it "'set' operator must work on arbitrary days" do
-      @mock.visits.set(5, Date.parse("2010-05-01"))
-      @mock.visits.on(Date.parse("2010-05-01")).should == 5
-      Test.find(@object_id).visits.on(Date.parse("2010-05-01")).should == 5
+      @mock.visits.set(5, Time.parse("2010-05-01"))
+      @mock.visits.on(Time.parse("2010-05-01")).should == 5
+      Test.find(@object_id).visits.on(Time.parse("2010-05-01")).should == 5
     end
 
     it "'add' operator must work" do
@@ -195,9 +201,9 @@ describe Mongoid::Tracking do
     end
 
     it "'add' operator must work on arbitrary days" do
-      @mock.visits.add(5, Date.parse("2010-05-01"))
-      @mock.visits.on(Date.parse("2010-05-01")).should == 10
-      Test.find(@object_id).visits.on(Date.parse("2010-05-01")).should == 10
+      @mock.visits.add(5, Time.parse("2010-05-01"))
+      @mock.visits.on(Time.parse("2010-05-01")).should == 10
+      Test.find(@object_id).visits.on(Time.parse("2010-05-01")).should == 10
     end
 
     it "on() accessor must work on dates as String" do
@@ -205,14 +211,14 @@ describe Mongoid::Tracking do
       @mock.visits.on("2010-05-01").should == 10
     end
 
-    it "on() accessor must work on dates as Date ancestors" do
+    it "on() accessor must work on Date descendants" do
       # We have data for today as previous tests populated the visits field
       @mock.visits.on(Date.parse("2010-05-01")).should == 10
     end
 
     it "on() accessor must work on dates as Ranges" do
       # We have data for today as previous tests populated the visits field
-      @mock.visits.on(Date.parse("2010-04-30")..Date.parse("2010-05-02")).should == [0, 10, 0]
+      @mock.visits.on(Time.parse("2010-04-30")..Time.parse("2010-05-02")).should == [0, 10, 0]
     end
   end
 

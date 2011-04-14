@@ -321,7 +321,6 @@ describe Mongoid::Tracking::Aggregates do
 
     it "should delete the values when using nil" do
       @mock.visits.reset(nil, "2010-07-14")
-
       @mock.visits.on("2010-07-14").should == 0
       @mock.visits.browsers.all_values.should =~ [
         ["mozilla",  [1]],
@@ -411,17 +410,17 @@ describe Mongoid::Tracking::Aggregates do
 
     it "should return the correct first_date for every aggregate" do
       @mock.visits.browsers.first_date.should =~ [
-        ["mozilla",  Date.parse("2010-07-11")],
-        ["google",   Date.parse("2010-07-12")],
-        ["internet", Date.parse("2010-07-13")]
+        ["mozilla",  Time.parse("2010-07-11")],
+        ["google",   Time.parse("2010-07-12")],
+        ["internet", Time.parse("2010-07-13")]
       ]
     end
 
     it "should return the correct last_date for every aggregate" do
       @mock.visits.browsers.last_date.should =~ [
-        ["mozilla",  Date.parse("2010-07-14")],
-        ["google",   Date.parse("2010-07-15")],
-        ["internet", Date.parse("2010-07-16")]
+        ["mozilla",  Time.parse("2010-07-14")],
+        ["google",   Time.parse("2010-07-15")],
+        ["internet", Time.parse("2010-07-16")]
       ]
     end
 

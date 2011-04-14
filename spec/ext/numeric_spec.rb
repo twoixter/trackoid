@@ -8,6 +8,6 @@ describe Numeric do
 
   it "should be able to add additional data to it" do
     num = 5.set_hours([1, 2, 3, 4])
-    num.hours.should == [1, 2, 3, 4]
+    num.hourly.should == [1, 2, 3, 4]
   end
 end

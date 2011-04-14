@@ -64,11 +64,11 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def inc(date = Date.today)
+      def inc(date = Time.now)
         add(1, date)
       end
 
-      def dec(date = Date.today)
+      def dec(date = Time.now)
         add(-1, date)
       end
 
@@ -114,8 +114,7 @@ module Mongoid  #:nodoc:
       def erase(date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
-        # For the in memory data, we just need to set it to nil
-        update_data(nil, date)
+        remove_data(date)
         @owner.collection.update(
             @owner._selector,
             { "$unset" => update_hash(1, date) },
@@ -143,13 +142,36 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def update_data(value, date)
+      def whole_data_for(date)
         unless date.nil?
           date = normalize_date(date)
-          unless ts = @data[date.to_i_timestamp.to_s]
-            ts = @data[date.to_i_timestamp.to_s] = {}
+          h = date.whole_day.hour_collect {|d| data_for(d)}
+          h.sum.set_hours(h)
+        end
+      end
+
+      def update_data(value, date)
+        unless date.nil?
+          return remove_data(date) unless value
+          date = normalize_date(date)
+          dk, hk = date.to_i_timestamp.to_s, date.to_i_hour.to_s
+          unless ts = @data[dk]
+            ts = (@data[dk] = {})
           end
-          ts[date.to_i_hour.to_s] = value
+          ts[hk] = value
+        end
+      end
+
+      def remove_data(date)
+        unless date.nil?
+          date = normalize_date(date)
+          dk, hk = date.to_i_timestamp.to_s, date.to_i_hour.to_s
+          if ts = @data[dk]
+            ts.delete(hk)
+            unless ts.count > 0
+              @data.delete(dk)
+            end
+          end
         end
       end
 
@@ -163,7 +185,9 @@ module Mongoid  #:nodoc:
       def normalize_date(date)
         case date
         when String
-          Date.parse(date).to_time_in_current_zone
+          Time.parse(date)
+        when Date
+          date.to_time
         else
           date
         end

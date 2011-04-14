@@ -50,7 +50,7 @@ describe Mongoid::Tracking do
     before do
       ENV['TZ'] = 'America/Los_Angeles'
     end
-    
+
     it "should convert dates to UTC" do
       t = Time.now
       t.should_not be_utc

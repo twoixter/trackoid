@@ -15,7 +15,7 @@ Mongoid.configure do |config|
   name = "trackoid_test"
   host = "localhost"
   port = "27017"
-#  config.master = Mongo::Connection.new(host, port, :logger => Logger.new(STDOUT)).db(name)
+  # config.master = Mongo::Connection.new(host, port, :logger => Logger.new(STDOUT)).db(name)
   config.master = Mongo::Connection.new.db(name)
 end
 

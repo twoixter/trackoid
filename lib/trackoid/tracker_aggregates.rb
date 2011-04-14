@@ -12,6 +12,7 @@ module Mongoid  #:nodoc:
         @accessor = @owner.class.send(:internal_accessor_name, @token)
         @selector = {:ns => @token}
         @selector.merge!(:key => @key) if @key
+
         @criteria = @owner.send(@accessor).where(@selector)
       end
 
