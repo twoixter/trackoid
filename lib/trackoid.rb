@@ -3,6 +3,7 @@ require 'rubygems'
 gem "mongoid", ">= 1.9.0"
 
 require 'trackoid/errors'
+require 'trackoid/core_ext'
 require 'trackoid/readers'
 require 'trackoid/tracker'
 require 'trackoid/aggregates'
