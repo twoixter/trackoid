@@ -23,9 +23,18 @@ class Time
   def to_i_hour
     self.dup.utc.hour
   end
-  
+
   # Returns an integer to use as MongoDB key
   def to_key
     "#{to_i_timestamp}.#{to_i_hour}"
+  end
+
+  # Returns a range to be enumerated using hours for the whole day
+  def whole_day
+    # We could have used 'beginning_of_day' from ActiveSupport, but don't
+    # want to introduce a dependency (I've tried to avoid ActiveSupport
+    # although you will be using it since it's introduced by Mongoid)
+    midnight = Time.send(utc? ? :utc : :local, year, month, day)
+    midnight...(midnight + ::Range::DAYS)
   end
 end

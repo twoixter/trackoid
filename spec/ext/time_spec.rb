@@ -33,6 +33,28 @@ describe Time do
       # With ActiveSupport Numeric extensions
       range.map(1.hour){|d| d.to_i_hour}.should == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
     end
+
+    it "should iterate for a day and return the correct UTC keys" do
+      today = Time.utc(2011, 1, 1).whole_day
+      today.diff(Range::HOURS).should == 24
+      today.map(Range::HOURS) {|d| d.to_key}.should == [
+        "14975.0", "14975.1", "14975.2", "14975.3", "14975.4", "14975.5",
+        "14975.6", "14975.7", "14975.8", "14975.9", "14975.10", "14975.11",
+        "14975.12", "14975.13", "14975.14", "14975.15", "14975.16", "14975.17",
+        "14975.18", "14975.19", "14975.20", "14975.21", "14975.22", "14975.23"
+      ]
+    end
+
+    it "should iterate for a day and return the correct UTC keys (Helper methods)" do
+      today = Time.utc(2011, 1, 1).whole_day
+      today.hour_diff.should == 24
+      today.hour_map {|d| d.to_key}.should == [
+        "14975.0", "14975.1", "14975.2", "14975.3", "14975.4", "14975.5",
+        "14975.6", "14975.7", "14975.8", "14975.9", "14975.10", "14975.11",
+        "14975.12", "14975.13", "14975.14", "14975.15", "14975.16", "14975.17",
+        "14975.18", "14975.19", "14975.20", "14975.21", "14975.22", "14975.23"
+      ]
+    end
   end
 
   describe "when working with TZ dates (Europe)" do
@@ -79,6 +101,27 @@ describe Time do
       time2 = Time.local(2011, 1, 1, 23, 59, 59)
       time2.to_i_hour.should == 7 # This is for the next day
     end
-  end
 
+    it "should iterate for a day and return the correct UTC keys" do
+      today = Time.local(2011, 1, 1).whole_day
+      today.map(Range::HOURS) {|d| d.to_key}.should == [
+        "14975.8", "14975.9", "14975.10", "14975.11", "14975.12", "14975.13",
+        "14975.14", "14975.15", "14975.16", "14975.17", "14975.18",
+        "14975.19", "14975.20", "14975.21", "14975.22", "14975.23",
+        "14976.0", "14976.1", "14976.2", "14976.3", "14976.4", "14976.5",
+        "14976.6", "14976.7"
+      ]
+    end
+
+    it "should iterate for a day and return the correct UTC keys (Helper methods)" do
+      today = Time.local(2011, 1, 1).whole_day
+      today.hour_map {|d| d.to_key}.should == [
+        "14975.8", "14975.9", "14975.10", "14975.11", "14975.12", "14975.13",
+        "14975.14", "14975.15", "14975.16", "14975.17", "14975.18",
+        "14975.19", "14975.20", "14975.21", "14975.22", "14975.23",
+        "14976.0", "14976.1", "14976.2", "14976.3", "14976.4", "14976.5",
+        "14976.6", "14976.7"
+      ]
+    end
+  end
 end

@@ -25,6 +25,15 @@ describe Range do
       exc_range.diff(Range::HOURS).should == 10
     end
 
+    it "should also work when using helper methods" do
+      now = Time.now
+      inc_range = now..(now + 10*Range::HOURS)
+      exc_range = now...(now + 10*Range::HOURS)
+
+      inc_range.hour_diff.should == 11
+      exc_range.hour_diff.should == 10
+    end
+
     it "should behave like normal ranges for 1 element" do
       now = Time.now
       inc_range = now..now
@@ -40,7 +49,7 @@ describe Range do
 
       range1 = date1..date1
       range2 = date2..date2
-      
+
       range1.first.should_not be_utc
       range1.first.should be_dst
       range2.first.should be_utc
@@ -90,6 +99,12 @@ describe Range do
       
       # Result is now an array
       result.map(&:to_i_timestamp).should == [15065, 15066, 15067, 15068, 15069, 15070]
+    end
+
+    it "should also work using helper methods" do
+      date = Time.utc(2011, 4, 1, 0, 0)
+      result = (date..(date + 5*Range::HOURS)).hour_map
+      result.count.should == 6
     end
   end
 end

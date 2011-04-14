@@ -16,8 +16,8 @@ class Range
   def collect(step = DEFAULT_TIME_GRANULARITY)
     return super() unless first.is_a?(Time)
 
-    return collect {|c| c} unless block_given?
-    
+    return collect(step) {|c| c} unless block_given?
+
     # Pretty much a standard implementation of Map/Collect here
     ary, current, op = [], first, (exclude_end? ? :< : :<=)
     while current.send(op, last)
@@ -40,4 +40,13 @@ class Range
     end
   end
 
+  # Helper methods for non default parameters
+  def hour_diff
+    diff(HOURS)
+  end
+
+  def hour_collect(&block)
+    collect(HOURS, &block)
+  end
+  alias :hour_map :hour_collect
 end
