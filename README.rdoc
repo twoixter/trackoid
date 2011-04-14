@@ -186,7 +186,127 @@ A year full of statistical data takes only 2.8Kb, if you store integers. If your
 For comparison, this README is already 8.5Kb in size...
 
 
+== Changes for TZ support
+
+Well, this is the time (no pun intended) to add TZ support to Trackoid.
+
+The problem is that "today" is not the same "today" for everyone, so unless you live in UTC or don't care about time zones, you probably should stay in 0.2.0 version and live long and prosper...
+
+But... Okay, given the fact that "today" is not the same "today" for everyone, this is the brand new Trackoid, with TZ support.
+
+= What has changed?
+
+In the surface, almost nothing, but internally there has been a major rewrite of the tracking code (the 'inc', 'set' methods) and the readers ('today', 'yesterday', etc). This is due to the changes I've made to the MongoDB structure of the tracking data.
+
+**YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT**
+
+This is very important, so I will repeat:
+
+**YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT**
+
+The internal JSON structure of a tracking field was like that.
+
+    {
+      ... some other fields in the model...,
+      "tracking_data" : {
+        "2011" : {
+          "01" : {
+            "01" : 10,
+            "02" : 20,
+            "03" : 30,
+            ...
+          },
+          "02" : {
+            "01" : 10,
+            "02" : 20,
+            "03" : 30,
+            ...
+          }
+        }
+      }
+    }
+
+That is, years, months and days numbers created a nested hash in which the final data (leaves) was the amount tracked. You see? There was no trace of hours... That's the problem.
+
+This is the new, TZ aware version of the internal JSON structure:
+
+    {
+      ... some other fields in the model...,
+      "tracking_data" : {
+        "14975" : {
+          "00" : 10,
+          "01" : 20,
+          "02" : 30,
+          ...
+          "22" : 88,
+          "23" : 99
+        },
+        "14976" : {
+          "00" : 10,
+          "01" : 20,
+          "02" : 30,
+          ...
+          "22" : 88,
+          "23" : 99
+        }
+      }
+    }
+
+So, instead of a nested array with keys like year/month/day, I now use the timestamp of the date. Well, a cooked timestamp. "14975" is the numbers of days since the epoch, which is the number of seconds elapsed since midnight Coordinated Universal Time (UTC) of January 1, 1970, and blah, blah, blah... You know what's this all about (http://en.wikipedia.org/wiki/Unix_time)
+
+The exact formula is like this (Ruby):
+
+    date_index = Time.now.utc.to_i / 60 / 60 / 24
+
+The contents of every "day record" is another hash with 24 keys, one for each hour. This MUST be a hash, not an array (which might be more natural) sice Trackoid uses "upserts" operations to be atomic. Reading the array, modifying it and saving it back is not an option. The exact MongoDB operation to support this is as follows:
+
+    db.update(
+      { search_criteria },
+      { "$inc" => {"track_data.14976.10" => 1} },
+      { :upsert => true, :safe => false }
+    )
+
+= What "today" is it?
+
+All dates are saved in UTC. That means Trackoid returns a whole 24 hour block for "today" only where the TZ is exactly UTC/GMT (no offset). If you live in a country where there is an offset into UTC, Trackoid must read a whole block and some hours from the block before or after to build "your today".
+
+Example: I live in GMT+0200 (Daylight saving in effect, or summer time), then if I request data for "today" as of 2011-04-14, Trackoid must first read the block for 15078 (UTC index for 2011-04-14), shift up 2 hours and then fill the missing 2 hours from the day before (15078). The entire block will be like this:
+
+    "tracking_data" : {
+      "15078" : {
+        "22" : 88,    # Last two hours from 2011-04-13 UTC
+        "23" : 99
+      },
+      "15079" : {
+        "00" : 10,
+        "01" : 20,
+        "02" : 30,
+        ""
+      }
+    
+This is a more graphical representation:
+
+    Hours  00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+    ------ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --        
+    GMT+2: 00 00 00 XX 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+      UTC: --->  00 XX 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+           Shift up ---> 2 hours.
+
+
+For timezones with a negative offset from UTC (Like PDT/PST) the process is reversed: UTC values are shifted down and holes filled with the following day.
+
+
+= How should I tell Trackoid how TZ to use?
+
+Piece of cake: Use the reader methods "today", "yesterday", "last_days(N)" and Trackoid will use the effective Time Zone of your Rails/Ruby application.
+
+Trackoid will correctly translate dates for you (I hope) if you pass a date to any of those methods.
+
+
 = Revision History
+
+  0.3.0  -  Biggest change ever. Read **Changes for TZ support** above.
+            *** YOU WILL NEED A MIGRATION FOR EXISTING DATA ***
 
   0.2.0  -  Added 'reset' and 'erase' methods to tracker fields:
             * Reset does the same as "set" but also sets aggregate fields.
