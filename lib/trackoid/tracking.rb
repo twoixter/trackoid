@@ -40,8 +40,9 @@ module Mongoid #:nodoc:
       # an index for the internal tracking field.
       def set_tracking_field(name)
         field internal_track_name(name), :type => Hash    # , :default => {}
-        # Should we make an index for this field?
-        index internal_track_name(name)
+        # DONT make an index for this field. MongoDB indexes have limited
+        # size and seems that this is not a good target for indexing.
+        # index internal_track_name(name)
         tracked_fields << name
       end
       

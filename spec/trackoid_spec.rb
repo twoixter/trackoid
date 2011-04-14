@@ -50,6 +50,10 @@ describe Mongoid::Tracking do
       @mock.respond_to?(:visits).should be_true
     end
 
+    it "should NOT create an index for the stats field" do
+      @mock.class.index_options.should_not include(:visits_data)
+    end
+
     it "should respond 'false' to field_changed? method" do
       # Ok, this test is not very relevant since it will return false even
       # if Trackid does not override it.
