@@ -17,6 +17,11 @@ describe Time do
       time2 = Time.utc(2011, 1, 1, 23, 59, 59)
       time2.to_i_hour.should == 23
     end
+
+    it "should convert back with timestamps and hours" do
+      t = Time.from_key(14975, 23).utc
+      t.to_s.should == "2011-01-01 23:00:00 UTC"
+    end
   
     it "should work also on ranges (dates)" do
       time1 = Time.utc(2011, 1, 1, 0, 0, 0)
@@ -78,6 +83,11 @@ describe Time do
       time2 = Time.local(2011, 1, 1, 23, 59, 59)
       time2.to_i_hour.should == 22
     end
+
+    it "should convert back with timestamps and hours" do
+      t = Time.from_key(14975, 23)
+      t.to_s.should == "2011-01-02 00:00:00 +0100"
+    end
   end
 
   describe "when working with TZ dates (America)" do
@@ -100,6 +110,11 @@ describe Time do
     
       time2 = Time.local(2011, 1, 1, 23, 59, 59)
       time2.to_i_hour.should == 7 # This is for the next day
+    end
+
+    it "should convert back with timestamps and hours" do
+      t = Time.from_key(14976, 7)
+      t.to_s.should == "2011-01-01 23:00:00 -0800"
     end
 
     it "should iterate for a day and return the correct UTC keys" do

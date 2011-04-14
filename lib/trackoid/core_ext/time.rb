@@ -14,7 +14,8 @@ class Time
   #    2011-01-01 00:00:00 UTC  ===> 0
   #    2011-01-01 23:59:59 UTC  ===> 23
   #
-  ONEDAY = 60 * 60 * 24
+  ONEHOUR = 60 * 60
+  ONEDAY = 24 * ONEHOUR
 
   def to_i_timestamp
     self.dup.utc.to_i / ONEDAY
@@ -27,6 +28,10 @@ class Time
   # Returns an integer to use as MongoDB key
   def to_key
     "#{to_i_timestamp}.#{to_i_hour}"
+  end
+
+  def self.from_key(ts, h)
+    Time.at(ts.to_i * ONEDAY + h.to_i * ONEHOUR)
   end
 
   # Returns a range to be enumerated using hours for the whole day

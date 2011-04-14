@@ -34,7 +34,7 @@ module Mongoid  #:nodoc:
       end
 
       # Update methods
-      def add(how_much = 1, date = Date.today)
+      def add(how_much = 1, date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record. Save first!" if @owner.new_record?
         return if how_much == 0
 
@@ -72,7 +72,7 @@ module Mongoid  #:nodoc:
         add(-1, date)
       end
 
-      def set(how_much, date = Date.today)
+      def set(how_much, date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
         @owner.collection.update(
@@ -92,7 +92,7 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def reset(how_much, date = Date.today)
+      def reset(how_much, date = Time.now)
         return erase(date) if how_much.nil?
 
         # First, we use the default "set" for the tracking field
@@ -111,7 +111,7 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def erase(date = Date.today)
+      def erase(date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
         # For the in memory data, we just need to set it to nil
@@ -137,35 +137,33 @@ module Mongoid  #:nodoc:
 
       private
       def data_for(date)
-        return nil if date.nil?
-        date = normalize_date(date)
-        @data.try(:[], date.year.to_s).try(:[], date.month.to_s).try(:[], date.day.to_s) || 0
+        unless date.nil?
+          date = normalize_date(date)
+          @data.try(:[], date.to_i_timestamp.to_s).try(:[], date.to_i_hour.to_s) || 0
+        end
       end
 
       def update_data(value, date)
-        return nil if date.nil?
-        date = normalize_date(date)
-        [:year, :month].inject(@data) { |data, period|
-          data[date.send(period).to_s] ||= {}
-        }
-        @data[date.year.to_s][date.month.to_s][date.day.to_s] = value
+        unless date.nil?
+          date = normalize_date(date)
+          unless ts = @data[date.to_i_timestamp.to_s]
+            ts = @data[date.to_i_timestamp.to_s] = {}
+          end
+          ts[date.to_i_hour.to_s] = value
+        end
       end
-
-      def year_literal(d);  "#{d.year}"; end
-      def month_literal(d); "#{d.year}.#{d.month}"; end
-      def date_literal(d);  "#{d.year}.#{d.month}.#{d.day}"; end
 
       def update_hash(num, date)
         date = normalize_date(date)
         {
-          "#{@for_data}.#{date_literal(date)}" => num
+          "#{@for_data}.#{date.to_key}" => num
         }
       end
 
       def normalize_date(date)
         case date
         when String
-          Date.parse(date)
+          Date.parse(date).to_time_in_current_zone
         else
           date
         end

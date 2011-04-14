@@ -6,7 +6,7 @@ module Mongoid  #:nodoc:
 
       # Access methods
       def today
-        data_for(Date.today)
+        data_for(Time.now)
       end
 
       def yesterday
@@ -39,23 +39,15 @@ module Mongoid  #:nodoc:
 
       # Utility methods
       def first_date
-        # We are guaranteed _m and _d to exists unless @data is a malformed
-        # hash, so we need to do this nasty "return nil", sorry...
-        # TODO: I'm open to change this to a cleaner algorithm :-)
-        return nil unless _y = @data.keys.min
-        return nil unless _m = @data[_y].keys.min
-        return nil unless _d = @data[_y][_m].keys.min
-        Date.new(_y.to_i, _m.to_i, _d.to_i)
+        return nil unless _ts = @data.keys.min
+        return nil unless _h = @data[_ts].keys.min
+        Time.from_key(_ts, _h)
       end
-      
+
       def last_date
-        # We are guaranteed _m and _d to exists unless @data is a malformed
-        # hash, so we need to do this nasty "return nil", sorry...
-        # TODO: I'm open to change this to a cleaner algorithm :-)
-        return nil unless _y = @data.keys.max
-        return nil unless _m = @data[_y].keys.max
-        return nil unless _d = @data[_y][_m].keys.max
-        Date.new(_y.to_i, _m.to_i, _d.to_i)
+        return nil unless _ts = @data.keys.max
+        return nil unless _h = @data[_ts].keys.max
+        Time.from_key(_ts, _h)
       end
 
     end
