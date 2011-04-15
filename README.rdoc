@@ -2,6 +2,15 @@
 
 Trackoid is an analytics tracking system made specifically for MongoDB using Mongoid as ORM.
 
+= *** IMPORTANT ***
+
+Trackoid Version 0.3.0 changes the internal representation of tracking data. So <b>YOU WILL NOT SEE PREVIOUS DATA</b> when you update.
+
+Hopefully, due to the magic of MongoDB, data is <b>NOT LOST</b>. In fact it's never lost unless you delete it. :-) Just it's not visible right away.
+
+See <b>Changes for TZ support</b> below for an explanation of changes. If you absolutely, desperately, dead or alive, need a migration, leave me a message and we can arrange a migration script.
+
+
 = Requirements
 
 Trackoid requires Mongoid, which obviously in turn requires MongoDB. Although you can only use Trackoid in Rails projects using Mongoid, it can easily be ported to MongoMapper or other ORM. You can also port it to work directly using MongoDB.
@@ -186,7 +195,7 @@ A year full of statistical data takes only 2.8Kb, if you store integers. If your
 For comparison, this README is already 8.5Kb in size...
 
 
-== Changes for TZ support
+= Changes for TZ support
 
 Well, this is the time (no pun intended) to add TZ support to Trackoid.
 
@@ -194,15 +203,15 @@ The problem is that "today" is not the same "today" for everyone, so unless you 
 
 But... Okay, given the fact that "today" is not the same "today" for everyone, this is the brand new Trackoid, with TZ support.
 
-= What has changed?
+== What has changed?
 
 In the surface, almost nothing, but internally there has been a major rewrite of the tracking code (the 'inc', 'set' methods) and the readers ('today', 'yesterday', etc). This is due to the changes I've made to the MongoDB structure of the tracking data.
 
-**YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT**
+<b>YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT</b>
 
 This is very important, so I will repeat:
 
-**YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT**
+<b>YOU WILL NEED TO MIGRATE THE EXISTING DATA IF YOU WANT TO KEEP IT</b>
 
 The internal JSON structure of a tracking field was like that.
 
@@ -266,7 +275,7 @@ The contents of every "day record" is another hash with 24 keys, one for each ho
       { :upsert => true, :safe => false }
     )
 
-= What "today" is it?
+== What "today" is it?
 
 All dates are saved in UTC. That means Trackoid returns a whole 24 hour block for "today" only where the TZ is exactly UTC/GMT (no offset). If you live in a country where there is an offset into UTC, Trackoid must read a whole block and some hours from the block before or after to build "your today".
 
@@ -296,17 +305,18 @@ This is a more graphical representation:
 For timezones with a negative offset from UTC (Like PDT/PST) the process is reversed: UTC values are shifted down and holes filled with the following day.
 
 
-= How should I tell Trackoid how TZ to use?
+== How should I tell Trackoid how TZ to use?
 
 Piece of cake: Use the reader methods "today", "yesterday", "last_days(N)" and Trackoid will use the effective Time Zone of your Rails/Ruby application.
 
-Trackoid will correctly translate dates for you (I hope) if you pass a date to any of those methods.
+Trackoid will correctly translate dates for you (hopefully) if you pass a date to any of those methods.
+
 
 
 = Revision History
 
-  0.3.0  -  Biggest change ever. Read **Changes for TZ support** above.
-            *** YOU WILL NEED A MIGRATION FOR EXISTING DATA ***
+  0.3.0  -  Biggest change ever. Read <b>Changes for TZ support</b> above.
+            <b>YOU WILL NEED A MIGRATION FOR EXISTING DATA</b>
 
   0.2.0  -  Added 'reset' and 'erase' methods to tracker fields:
             * Reset does the same as "set" but also sets aggregate fields.

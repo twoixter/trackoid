@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{trackoid}
-  s.version = "0.2.0"
+  s.version = "0.3.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jose Miguel Perez"]
-  s.date = %q{2011-03-26}
+  s.date = %q{2011-04-15}
   s.description = %q{Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability}
   s.email = %q{josemiguel@perezruiz.com}
   s.extra_rdoc_files = [
@@ -18,21 +18,30 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
+    ".rspec",
     "LICENSE",
     "README.rdoc",
     "Rakefile",
     "VERSION",
     "lib/trackoid.rb",
     "lib/trackoid/aggregates.rb",
+    "lib/trackoid/core_ext.rb",
+    "lib/trackoid/core_ext/range.rb",
+    "lib/trackoid/core_ext/time.rb",
     "lib/trackoid/errors.rb",
+    "lib/trackoid/reader_extender.rb",
     "lib/trackoid/readers.rb",
     "lib/trackoid/tracker.rb",
     "lib/trackoid/tracker_aggregates.rb",
     "lib/trackoid/tracking.rb",
     "spec/aggregates_spec.rb",
+    "spec/ext/range_spec.rb",
+    "spec/ext/time_spec.rb",
+    "spec/reader_extender_spec.rb",
     "spec/readers_spec.rb",
     "spec/spec.opts",
     "spec/spec_helper.rb",
+    "spec/timezone_spec.rb",
     "spec/trackoid_spec.rb",
     "trackoid.gemspec"
   ]
@@ -42,8 +51,12 @@ Gem::Specification.new do |s|
   s.summary = %q{Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid}
   s.test_files = [
     "spec/aggregates_spec.rb",
+    "spec/ext/range_spec.rb",
+    "spec/ext/time_spec.rb",
+    "spec/reader_extender_spec.rb",
     "spec/readers_spec.rb",
     "spec/spec_helper.rb",
+    "spec/timezone_spec.rb",
     "spec/trackoid_spec.rb"
   ]
 
