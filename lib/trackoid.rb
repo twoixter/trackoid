@@ -1,9 +1,11 @@
+# encoding: utf-8
 require 'rubygems'
 
 gem "mongoid", ">= 1.9.0"
 
 require 'trackoid/errors'
 require 'trackoid/core_ext'
+require 'trackoid/reader_extender'
 require 'trackoid/readers'
 require 'trackoid/tracker'
 require 'trackoid/aggregates'

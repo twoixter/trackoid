@@ -1,3 +1,4 @@
+# encoding: utf-8
 class Time
   # Functions to construct the MongoDB field key for trackers
   #

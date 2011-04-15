@@ -146,7 +146,7 @@ module Mongoid  #:nodoc:
         unless date.nil?
           date = normalize_date(date)
           h = date.whole_day.hour_collect {|d| data_for(d)}
-          h.sum.set_hours(h)
+          ReaderExtender.new(h.sum, h)
         end
       end
 

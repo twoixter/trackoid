@@ -1,3 +1,4 @@
+# encoding: utf-8
 class Range
   # Adds some enumerable capabilities to Time ranges
   # (Normally they raise a "Can't iterate time ranges")
