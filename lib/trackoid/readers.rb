@@ -39,23 +39,15 @@ module Mongoid  #:nodoc:
 
       # Utility methods
       def first_date
-        # We are guaranteed _m and _d to exists unless @data is a malformed
-        # hash, so we need to do this nasty "return nil", sorry...
-        # TODO: I'm open to change this to a cleaner algorithm :-)
-        return nil unless _y = @data.keys.min
-        return nil unless _m = @data[_y].keys.min
-        return nil unless _d = @data[_y][_m].keys.min
-        Date.new(_y.to_i, _m.to_i, _d.to_i)
+        if _y = @data.keys.min and  _m = @data[_y].keys.min and _d = @data[_y][_m].keys.min
+          Date.new(_y.to_i, _m.to_i, _d.to_i)
+        end
       end
       
       def last_date
-        # We are guaranteed _m and _d to exists unless @data is a malformed
-        # hash, so we need to do this nasty "return nil", sorry...
-        # TODO: I'm open to change this to a cleaner algorithm :-)
-        return nil unless _y = @data.keys.max
-        return nil unless _m = @data[_y].keys.max
-        return nil unless _d = @data[_y][_m].keys.max
-        Date.new(_y.to_i, _m.to_i, _d.to_i)
+        if _y = @data.keys.max and  _m = @data[_y].keys.max and _d = @data[_y][_m].keys.max
+          Date.new(_y.to_i, _m.to_i, _d.to_i)
+        end
       end
 
     end
