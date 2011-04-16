@@ -20,7 +20,7 @@ module Mongoid  #:nodoc:
     #
     class ReaderExtender
       def initialize(number, hours)
-        @number = number
+        @total = number
         @hours = hours
       end
 
@@ -29,21 +29,25 @@ module Mongoid  #:nodoc:
       end
 
       def to_s
-        @number.to_s
+        @total.to_s
+      end
+
+      def to_f
+        @total.to_f
       end
 
       def ==(other)
-        @number == other
+        @total == other
       end
 
       def <=>(other)
-        @number <=> other
+        @total <=> other
       end
 
       def +(other)
-        return @number + other unless other.is_a?(ReaderExtender)
+        return @total + other unless other.is_a?(ReaderExtender)
 
-        @number = @number + other
+        @total = @total + other
         @hours = @hours.zip(other.hourly).map!(&:sum)
         self
       end
@@ -55,7 +59,7 @@ module Mongoid  #:nodoc:
       # to the underliying FixNum
       #
       def method_missing(name, *args, &blk)
-        ret = @number.send(name, *args, &blk)
+        ret = @total.send(name, *args, &blk)
         ret.is_a?(Numeric) ? ReaderExtender.new(ret, @hours) : ret
       end
     end

@@ -315,8 +315,22 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
 = Revision History
 
+  0.3.1  - Implemented 'to_f' into ReaderExtender to be compatible with
+           ActionView::Template
+           Using "%.1f" % number gave "Can't convert to float"
+
+         - Renamed the internal field of ReaderExtender to "total" so that
+           converting to json automatically gives you:
+           
+           {
+             "total": <total value>
+             "hours": [<hours array>]
+           }
+
   0.3.0  -  Biggest change ever. Read <b>Changes for TZ support</b> above.
             <b>YOU WILL NEED A MIGRATION FOR EXISTING DATA</b>
+
+  ------
 
   0.2.0  -  Added 'reset' and 'erase' methods to tracker fields:
             * Reset does the same as "set" but also sets aggregate fields.

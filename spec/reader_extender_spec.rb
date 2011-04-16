@@ -8,6 +8,25 @@ describe Mongoid::Tracking::ReaderExtender do
     (num * 10).should == 50
   end
 
+  it "should behave like a float" do
+    num = Mongoid::Tracking::ReaderExtender.new(5, [])
+    num.should == 5.0
+    num.should < 10.0
+    (num * 10.0).should == 50.0
+  end
+
+  it "to_f should return a Float (for ActionView::Template compat.)" do
+    num = Mongoid::Tracking::ReaderExtender.new(5, [])
+    num.to_f.should == 5.0
+    num.to_f.should be_kind_of(Float)
+  end
+
+  it "as_json should return a 'total' and a 'hours' member" do
+    json = Mongoid::Tracking::ReaderExtender.new(5, []).as_json
+    json.should have_key("total")
+    json.should have_key("hours")
+  end
+
   it "should be able to add additional data to it" do
     num = Mongoid::Tracking::ReaderExtender.new(5, [1, 2, 3, 4])
     num.hourly.should == [1, 2, 3, 4]
