@@ -52,7 +52,7 @@ module Mongoid  #:nodoc:
         self
       end
 
-      def as_json
+      def as_json(options = nil)
         @total
       end
 
