@@ -52,6 +52,10 @@ module Mongoid  #:nodoc:
         self
       end
 
+      def as_json
+        @total
+      end
+
       # Solution proposed by Yehuda Katz in the following Stack Overflow:
       # http://stackoverflow.com/questions/1095789/sub-classing-fixnum-in-ruby
       #

@@ -315,6 +315,15 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
 = Revision History
 
+  0.3.2  - ReaderExtender as_json sould not return the full "total" and
+           "hours" data. I think it's more reasonable to return just the
+           total number like it always was. If you have the whole structure
+           you need to add somewhere:
+
+           def as_json
+             { :total => @stat, :hourly => @stat.hourly }
+           end
+
   0.3.1  - Implemented 'to_f' into ReaderExtender to be compatible with
            ActionView::Template
            Using "%.1f" % number gave "Can't convert to float"

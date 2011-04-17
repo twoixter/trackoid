@@ -21,10 +21,14 @@ describe Mongoid::Tracking::ReaderExtender do
     num.to_f.should be_kind_of(Float)
   end
 
-  it "as_json should return a 'total' and a 'hours' member" do
-    json = Mongoid::Tracking::ReaderExtender.new(5, []).as_json
-    json.should have_key("total")
-    json.should have_key("hours")
+  it "as_json should not return a 'total' and a 'hours' member" do
+    json = Mongoid::Tracking::ReaderExtender.new(5, [1, 2, 3]).as_json
+    json.should == 5
+  end
+
+  it "hourly as_json should return an array" do
+    json = Mongoid::Tracking::ReaderExtender.new(5, [1, 2, 3]).hourly.as_json
+    json.should == [1, 2, 3]
   end
 
   it "should be able to add additional data to it" do
