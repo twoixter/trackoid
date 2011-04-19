@@ -25,7 +25,6 @@ describe "Testing Readers with a model" do
     @mock.visits.on(range).should == [1, 2, 3]
   end
 
-
   it "should return the correct values for .all_values" do
     @mock.visits.set(1, "2010-07-11")
     @mock.visits.set(2, "2010-07-12")
@@ -42,7 +41,6 @@ describe "Testing Readers with a model" do
     @mock.visits.last_value.should == 10
     @mock.visits.first_value.should == 5
   end
-
 end
 
 
@@ -74,4 +72,3 @@ describe "Testing Readers with an empty model" do
     @mock.visits.all_values.should be_nil
   end
 end
-

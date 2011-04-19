@@ -37,10 +37,7 @@ class Time
 
   # Returns a range to be enumerated using hours for the whole day
   def whole_day
-    # We could have used 'beginning_of_day' from ActiveSupport, but don't
-    # want to introduce a dependency (I've tried to avoid ActiveSupport
-    # although you will be using it since it's introduced by Mongoid)
-    midnight = Time.send(utc? ? :utc : :local, year, month, day)
+    midnight = utc? ? Time.utc(year, month, day) : Time.new(year, month, day, 0, 0, 0, utc_offset)
     midnight...(midnight + ::Range::DAYS)
   end
 end
