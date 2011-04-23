@@ -104,7 +104,7 @@ describe Mongoid::Tracking do
       local.utc_offset.should == -25200
 
       Time.zone = ActiveSupport::TimeZone["Europe/Madrid"]
-      local = Time.local(2011, 6, 1, 0, 0)
+      local = Time.local(2011, 6, 1, 0, 0).in_time_zone
       local.should be_dst
       local.utc_offset.should == 7200
     end
