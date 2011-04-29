@@ -46,10 +46,7 @@ module Mongoid  #:nodoc:
 
       def +(other)
         return @total + other unless other.is_a?(ReaderExtender)
-
-        @total = @total + other
-        @hours = @hours.zip(other.hourly).map!(&:sum)
-        self
+        self.class.new(@total + other, @hours.zip(other.hourly).map!(&:sum))
       end
 
       def as_json(options = nil)

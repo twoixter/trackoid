@@ -315,7 +315,10 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
 = Revision History
 
-  0.3.4  - Fixed midnight calculation for Time.whole_day
+  0.3.5  - BUGFIX: ReaderExtender "+" acted like an accumulator. Problem more
+           evident when using ActiveSupport "sum" for arrays.
+
+  0.3.4  - BUGFIX: Fixed midnight calculation for Time.whole_day
 
   0.3.3  - as_json should take a "options" hash as optional parameter.
 
