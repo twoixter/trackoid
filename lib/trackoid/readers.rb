@@ -28,8 +28,11 @@ module Mongoid  #:nodoc:
       end
 
       def on(date)
-        return date.collect {|d| whole_data_for(d)} if date.is_a?(Range)
-        whole_data_for(date)
+        if date.is_a?(Range)
+          whole_data_for_range(date)
+        else
+          whole_data_for(date)
+        end
       end
 
       def all_values

@@ -158,6 +158,31 @@ module Mongoid  #:nodoc:
         end
       end
 
+      def whole_data_for_range(date)
+        date = normalize_date(date)
+        if date.first.utc?
+          keys = date.map(&:to_key_timestamp)
+          keys.inject([]) {|r,e|
+            d = expand_hash(@data[e])
+            r << ReaderExtender.new(d.sum, d)
+          }
+        else
+          first = date.first.whole_day.first.to_key_timestamp
+          last  = date.last.whole_day.last.to_key_timestamp
+          pivot = date.first.whole_day.first.to_i_hour
+          acc = expand_hash(@data[first.to_s])
+
+          data = []
+          first.succ.upto(last) do |n|
+            d = expand_hash(@data[n])
+            t = acc[pivot, 24] + d[0, pivot]
+            acc = d
+            data << ReaderExtender.new(t.sum, t)
+          end
+          data
+        end
+      end
+
       def expand_hash(h)
         d = Array.new(24, 0)
         h.inject(d) {|d,e| d[e.first.to_i] = e.last; d} if h
@@ -202,6 +227,8 @@ module Mongoid  #:nodoc:
           Time.parse(date)
         when Date
           date.to_time
+        when Range
+          normalize_date(date.first)..normalize_date(date.last)
         else
           date
         end
