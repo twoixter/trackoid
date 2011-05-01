@@ -145,9 +145,23 @@ module Mongoid  #:nodoc:
       def whole_data_for(date)
         unless date.nil?
           date = normalize_date(date)
-          h = date.whole_day.hour_collect {|d| data_for(d)}
-          ReaderExtender.new(h.sum, h)
+          if date.utc?
+            d = expand_hash @data[date.to_key_timestamp]
+            ReaderExtender.new(d.sum, d)
+          else
+            r = date.whole_day
+            d1 = expand_hash @data[r.first.to_key_timestamp]
+            d2 = expand_hash @data[r.last.to_key_timestamp]
+            t = d1[r.first.to_i_hour, 24] + d2[0, r.first.to_i_hour]
+            ReaderExtender.new(t.sum, t)
+          end
         end
+      end
+
+      def expand_hash(h)
+        d = Array.new(24, 0)
+        h.inject(d) {|d,e| d[e.first.to_i] = e.last; d} if h
+        d
       end
 
       def update_data(value, date)

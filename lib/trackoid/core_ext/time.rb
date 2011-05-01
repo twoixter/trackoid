@@ -22,8 +22,16 @@ class Time
     self.dup.utc.to_i / ONEDAY
   end
 
+  def to_key_timestamp
+    to_i_timestamp.to_s
+  end
+
   def to_i_hour
     self.dup.utc.hour
+  end
+
+  def to_key_hour
+    to_i_hour.to_s
   end
 
   # Returns an integer to use as MongoDB key
