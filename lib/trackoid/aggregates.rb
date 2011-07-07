@@ -10,7 +10,7 @@ module Mongoid  #:nodoc:
         base.class_eval do
           extend ClassMethods
 
-          class_inheritable_accessor :aggregate_fields, :aggregate_klass
+          class_attribute :aggregate_fields, :aggregate_klass
           self.aggregate_fields = {}
           self.aggregate_klass = nil
           delegate :aggregate_fields, :aggregate_klass, :aggregated?,
