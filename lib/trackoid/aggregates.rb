@@ -10,7 +10,7 @@ module Mongoid  #:nodoc:
         base.class_eval do
           extend ClassMethods
 
-          class_inheritable_accessor :aggregate_fields, :aggregate_klass
+          class_attribute :aggregate_fields, :aggregate_klass
           self.aggregate_fields = {}
           self.aggregate_klass = nil
           delegate :aggregate_fields, :aggregate_klass, :aggregated?,
@@ -85,7 +85,9 @@ module Mongoid  #:nodoc:
 
         # Defines the aggregation model. It checks for class name conflicts
         def define_aggregate_model
-          raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined?
+          unless defined?(Rails) && Rails.env.development?
+            raise Errors::ClassAlreadyDefined.new(internal_aggregates_name) if foreign_class_defined?
+          end
 
           parent = self
           define_klass do

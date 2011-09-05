@@ -46,7 +46,7 @@ module Mongoid  #:nodoc:
         #
         update_data(data_for(date) + how_much, date)
         @owner.collection.update(
-            @owner._selector,
+            @owner.atomic_selector,
             { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
             :upsert => true, :safe => false
         )
@@ -76,7 +76,7 @@ module Mongoid  #:nodoc:
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
         @owner.collection.update(
-            @owner._selector, { "$set" => update_hash(how_much, date) },
+            @owner.atomic_selector, { "$set" => update_hash(how_much, date) },
             :upsert => true, :safe => false
         )
         return unless @owner.aggregated?
@@ -116,7 +116,7 @@ module Mongoid  #:nodoc:
 
         remove_data(date)
         @owner.collection.update(
-            @owner._selector,
+            @owner.atomic_selector,
             { "$unset" => update_hash(1, date) },
             :upsert => true, :safe => false
         )

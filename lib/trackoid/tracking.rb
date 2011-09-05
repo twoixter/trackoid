@@ -12,7 +12,7 @@ module Mongoid #:nodoc:
         include Aggregates
         extend ClassMethods
         
-        class_inheritable_accessor :tracked_fields
+        class_attribute :tracked_fields
         self.tracked_fields = []
         delegate :tracked_fields, :internal_track_name, :to => "self.class"
       end
