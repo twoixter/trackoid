@@ -47,7 +47,7 @@ Of course, you can also show visits in a time range:
 
     <h1>Visits on last 7 days</h1>
     <ul>
-      <% @page.visits.last_days(7).reverse.each_with_index do |i,d| %>
+      <% @page.visits.last_days(7).reverse.each_with_index do |d, i| %>
       <li><%= (DateTime.now - i).to_s %> : <%= d %></li>
       <% end %>
     </ul>
