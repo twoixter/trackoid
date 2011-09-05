@@ -315,6 +315,8 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
 = Revision History
 
+  0.3.7  - Fixed support for Rails 3.1 and Mongoid 2.2
+
   0.3.6  - Optimization for 'on' reader for ranges. Many times fold quicker.
 
   0.3.5  - BUGFIX: ReaderExtender "+" acted like an accumulator. Problem more
