@@ -96,9 +96,9 @@ describe Mongoid::Tracking::Aggregates do
 
   it "should have Mongoid accessors defined" do
     tm = TestModel.create(:name => "Dummy")
-    tm.send(tm.class.send(:internal_accessor_name, "browsers")).class.should == Mongoid::Criteria
-    tm.send(tm.class.send(:internal_accessor_name, "referers")).class.should == Mongoid::Criteria
-    tm.send(tm.class.send(:internal_accessor_name, "quarters")).class.should == Mongoid::Criteria
+    tm.send(tm.class.send(:internal_accessor_name, "browsers")).class.should == Mongoid::Relations::Targets::Enumerable
+    tm.send(tm.class.send(:internal_accessor_name, "referers")).class.should == Mongoid::Relations::Targets::Enumerable
+    tm.send(tm.class.send(:internal_accessor_name, "quarters")).class.should == Mongoid::Relations::Targets::Enumerable
   end
 
   it "should indicate this is an aggregated traking object with aggregated?" do
