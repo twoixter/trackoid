@@ -10,7 +10,6 @@ begin
     gem.email = "josemiguel@perezruiz.com"
     gem.homepage = "http://github.com/twoixter/trackoid"
     gem.authors = ["Jose Miguel Perez"]
-    gem.add_development_dependency "rspec", ">= 2.2.0"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
@@ -27,8 +26,6 @@ RSpec::Core::RakeTask.new(:rcov) do |spec|
   spec.pattern = 'spec/**/*_spec.rb'
   spec.rcov = true
 end
-
-task :spec => :check_dependencies
 
 task :default => :spec
 
