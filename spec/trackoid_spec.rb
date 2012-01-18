@@ -36,6 +36,20 @@ describe Mongoid::Tracking do
     }.should_not raise_error
   end
 
+  it "should not raise errors when using to/as_json" do
+    mock = Test.new(:name => "Trackoid")
+    json_as = {}
+    json_to = ""
+
+    lambda {
+      json_as = mock.as_json(:except => :_id)
+      json_to = mock.to_json(:except => :_id)
+    }.should_not raise_error
+
+    json_as.should == { "name" => "Trackoid" }
+    json_to.should == "{\"name\":\"Trackoid\"}"
+  end
+
   describe "when creating a new field with stats" do
     before(:all) do
       @mock = Test.new
