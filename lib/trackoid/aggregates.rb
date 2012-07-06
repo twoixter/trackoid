@@ -132,7 +132,8 @@ module Mongoid  #:nodoc:
         def define_klass(&block)
           scope = internal_aggregates_name.split('::')
           klass = scope.pop
-          klass = Object.const_set(klass, Class.new)
+          scope = scope.inject(Object) {|scope, const_name| scope.const_get(const_name)}
+          klass = scope.const_set(klass, Class.new)
           klass.class_eval(&block)
         end
 
