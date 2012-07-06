@@ -70,7 +70,7 @@ describe Mongoid::Tracking do
 
     it "should respond 'false' to field_changed? method" do
       # Ok, this test is not very relevant since it will return false even
-      # if Trackid does not override it.
+      # if Trackoid does not override it.
       @mock.visits_changed?.should be_false
     end
 
@@ -93,7 +93,7 @@ describe Mongoid::Tracking do
       lambda { @mock.visits.inc }.should raise_error Mongoid::Errors::ModelNotSaved
     end
 
-    it "shold create an empty hash as the internal representation" do
+    it "should create an empty hash as the internal representation" do
       @mock.visits.send(:_original_hash).should == {}
     end
 

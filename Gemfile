@@ -6,5 +6,5 @@ group :development do
   gem 'rake'
   gem 'jeweler'
   gem 'rspec', '>= 2.2.0'
-  gem 'mocha'
+  gem 'mocha', '0.11.0'
 end
