@@ -2,9 +2,9 @@
 module Mongoid  #:nodoc:
   module Tracking #:nodoc:
     module Aggregates
-      
+
       DEPRECATED_TOKENS = ['hour', 'hours']
-      
+
       # This module includes aggregate data extensions to Trackoid instances
       def self.included(base)
         base.class_eval do
@@ -21,7 +21,7 @@ module Mongoid  #:nodoc:
       module ClassMethods
         # Defines an aggregate token to an already tracked model. It defines
         # a new mongoid model named after the original model.
-        # 
+        #
         # Example:
         #
         # <tt>class Page</tt>
@@ -36,7 +36,7 @@ module Mongoid  #:nodoc:
         # A new model is defined as <tt>class PageAggregates</tt>
         #
         # This model has the following structure:
-        # 
+        #
         # <tt>belongs_to :page</tt>
         # <tt>field :ns, :type => String</tt>
         # <tt>field :key, :type => String</tt>
@@ -152,7 +152,7 @@ module Mongoid  #:nodoc:
           end
         end
       end
-      
+
     end
   end
 end

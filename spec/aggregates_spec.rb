@@ -29,6 +29,34 @@ class SecondTestModel
   aggregate :aggregate_four do Time.now end
 end
 
+# Namespaced models to test avoid name collisions
+# Collitions may happen when declaring internal aggregate classes for a model
+# which has the same name as other models in another namespace
+module MyCompany
+  class TestPerson
+    include Mongoid::Document
+    include Mongoid::Tracking
+
+    field :my_name
+
+    track :logins
+    aggregate :initials do |n| n.to_s[0]; end
+  end
+end
+
+module YourCompany
+  class TestPerson
+    include Mongoid::Document
+    include Mongoid::Tracking
+
+    field :your_name
+
+    track :logins
+    aggregate :initials do |n| n.to_s[0]; end
+  end
+end
+
+
 describe Mongoid::Tracking::Aggregates do
 
   before(:all) do
@@ -244,7 +272,7 @@ describe Mongoid::Tracking::Aggregates do
       @mock.visits("Google Chrome").inc
       @mock.visits.browsers.today.should =~ [["mozilla", 1], ["google", 1]]
       @mock.visits.referers.today.should =~ [["firefox", 1], ["chrome", 1]]
-      
+
       # Just for testing array manipulations
       @mock.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
     end
@@ -438,6 +466,33 @@ describe Mongoid::Tracking::Aggregates do
         ["google",   5],
         ["internet", 6]
       ]
+    end
+  end
+
+  describe "When using models with same name on different namespaces" do
+    before do
+      MyCompany::TestPerson.all.map(&:destroy)
+      MyCompany::TestPerson.create(:my_name => "twoixter")
+      @my_object_id = MyCompany::TestPerson.first.id
+      @my_mock = MyCompany::TestPerson.first
+      @my_mock.logins("ASCII").set(1, "2012-07-07")
+      @my_mock.logins("EBCDIC").set(1, "2012-07-07")
+
+      YourCompany::TestPerson.all.map(&:destroy)
+      YourCompany::TestPerson.create(:your_name => "test")
+      @your_object_id = YourCompany::TestPerson.first.id
+      @your_mock = YourCompany::TestPerson.first
+      @your_mock.logins("UTF8").set(1, "2012-07-07")
+      @your_mock.logins("LATIN1").set(1, "2012-07-07")
+    end
+
+    it "should be different objects" do
+      @my_mock.my_name.should_not == @your_mock.your_name
+    end
+
+    it "should yield different aggregates" do
+      @my_mock.logins.initials.on("2012-07-07").should =~ [["A", 1], ["E", 1]]
+      @your_mock.logins.initials.on("2012-07-07").should =~ [["U", 1], ["L", 1]]
     end
   end
 end
