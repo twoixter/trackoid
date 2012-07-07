@@ -7,7 +7,7 @@ class TestModel
   field :name   # Dummy field
 
   # Note that references to "track" and "aggregate" in this test are mixed
-  # for testing pourposes. Trackoid does not make any difference in the
+  # for testing purposes. Trackoid does not make any difference in the
   # declaration order of tracking fields and aggregate tokens.
   track :visits
   aggregate :browsers do |b| b.split.first.downcase if b; end

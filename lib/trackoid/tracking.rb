@@ -7,8 +7,10 @@ module Mongoid #:nodoc:
     # field named after :field
     def self.included(base)
       base.class_eval do
-        raise Errors::NotMongoid, "Must be included in a Mongoid::Document" unless self.ancestors.include? Mongoid::Document
-
+        unless self.ancestors.include? Mongoid::Document
+          raise Errors::NotMongoid, "Must be included in a Mongoid::Document"
+        end
+        
         include Aggregates
         extend ClassMethods
         
