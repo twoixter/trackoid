@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{trackoid}
-  s.version = "0.3.7"
+  s.name = "trackoid"
+  s.version = "0.3.8"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Jose Miguel Perez"]
-  s.date = %q{2011-09-05}
-  s.description = %q{Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability}
-  s.email = %q{josemiguel@perezruiz.com}
+  s.date = "2012-07-07"
+  s.description = "Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability"
+  s.email = "josemiguel@perezruiz.com"
   s.extra_rdoc_files = [
     "LICENSE",
     "README.rdoc"
@@ -46,13 +46,12 @@ Gem::Specification.new do |s|
     "spec/trackoid_spec.rb",
     "trackoid.gemspec"
   ]
-  s.homepage = %q{http://github.com/twoixter/trackoid}
+  s.homepage = "http://github.com/twoixter/trackoid"
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.3.7}
-  s.summary = %q{Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid}
+  s.rubygems_version = "1.8.24"
+  s.summary = "Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid"
 
   if s.respond_to? :specification_version then
-    current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
@@ -60,20 +59,20 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<rake>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
       s.add_development_dependency(%q<rspec>, [">= 2.2.0"])
-      s.add_development_dependency(%q<mocha>, ["~> 0.10.0"])
+      s.add_development_dependency(%q<mocha>, ["= 0.11.0"])
     else
       s.add_dependency(%q<mongoid>, [">= 2.1.0"])
       s.add_dependency(%q<rake>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
       s.add_dependency(%q<rspec>, [">= 2.2.0"])
-      s.add_dependency(%q<mocha>, ["~> 0.10.0"])
+      s.add_dependency(%q<mocha>, ["= 0.11.0"])
     end
   else
     s.add_dependency(%q<mongoid>, [">= 2.1.0"])
     s.add_dependency(%q<rake>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
     s.add_dependency(%q<rspec>, [">= 2.2.0"])
-    s.add_dependency(%q<mocha>, ["~> 0.10.0"])
+    s.add_dependency(%q<mocha>, ["= 0.11.0"])
   end
 end
 
