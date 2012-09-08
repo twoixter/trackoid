@@ -203,11 +203,13 @@ module Mongoid  #:nodoc:
         end
       end
 
+      # Returns a store key for passed date.
+      def store_key(date)
+        "#{@for_data}.#{normalize_date(date).to_key}"
+      end
+
       def update_hash(num, date)
-        date = normalize_date(date)
-        {
-          "#{@for_data}.#{date.to_key}" => num
-        }
+        { store_key(date) => num }
       end
 
       # Allow for dates to be different types.
