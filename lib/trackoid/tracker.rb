@@ -107,22 +107,19 @@ module Mongoid  #:nodoc:
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
         remove_data(date)
-        @owner.collection.update(
-            @owner.atomic_selector,
-            { "$unset" => update_hash(1, date) },
-            :upsert => true, :safe => false
-        )
+
+        @owner.unset(store_key(date))
+
         return unless @owner.aggregated?
 
         # Need to iterate over all aggregates and send an update or delete
         # operations over all mongo records
         @owner.aggregate_fields.each do |(k,v)|
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$unset" => update_hash(1, date) },
-              :upsert => true, :multi => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k }
+
+          criteria = @owner.aggregate_klass.collection.find(selector)
+          criteria.upsert("$unset" => update_hash(1, date))
         end
       end
 
