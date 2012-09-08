@@ -162,10 +162,10 @@ module Mongoid  #:nodoc:
         date = normalize_date(date)
         if date.first.utc?
           keys = date.map(&:to_key_timestamp)
-          keys.inject([]) {|r,e|
+          keys.inject([]) do |r, e|
             d = expand_hash(@data[e])
             r << ReaderExtender.new(d.sum, d)
-          }
+          end
         else
           first = date.first.whole_day.first.to_key_timestamp
           last  = date.last.whole_day.last.to_key_timestamp
@@ -185,7 +185,7 @@ module Mongoid  #:nodoc:
 
       def expand_hash(h)
         d = Array.new(24, 0)
-        h.inject(d) {|d,e| d[e.first.to_i] = e.last; d} if h
+        h.inject(d) { |d, e| d[e.first.to_i] = e.last; d } if h
         d
       end
 
@@ -221,6 +221,7 @@ module Mongoid  #:nodoc:
         }
       end
 
+      # Allow for dates to be different types.
       def normalize_date(date)
         case date
         when String
