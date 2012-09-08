@@ -99,12 +99,14 @@ module Mongoid  #:nodoc:
             belongs_to parent.name.demodulize.underscore.to_sym, class_name: parent.name
 
             # Internal fields to track aggregation token and keys
-            field :ns,  :type => String
-            field :key, :type => String
-            index [[parent.name.foreign_key.to_sym, Mongo::ASCENDING],
-                   [:ns, Mongo::ASCENDING],
-                   [:key, Mongo::ASCENDING]],
-                    :unique => true, :background => true
+            field :ns, type: String
+            field :key, type: String
+
+            index({ 
+              parent.name.foreign_key.to_sym => 1,
+              ns: 1,
+              key: 1
+            }, { unique: true, background: true })            
 
             # Include parent tracking data.
             parent.tracked_fields.each { |track_field| track track_field }
