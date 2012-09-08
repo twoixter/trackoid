@@ -45,22 +45,17 @@ module Mongoid  #:nodoc:
         # read the actual value in return so that we save round trip delays.
         #
         update_data(data_for(date) + how_much, date)
-        @owner.collection.update(
-            @owner.atomic_selector,
-            { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-            :upsert => true, :safe => false
-        )
+        @owner.inc(store_key(date), how_much.abs)
+
         return unless @owner.aggregated?
 
-        @owner.aggregate_fields.each do |(k,v)|
+        @owner.aggregate_fields.each do |k, v|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update(
-              selector,
-              { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-              :upsert => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k, key: token.to_s }
+
+          criteria = @owner.aggregate_klass.collection.find(selector)
+          criteria.upsert("$inc" => update_hash(how_much.abs, date))
         end
       end
 
