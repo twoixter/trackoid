@@ -70,20 +70,18 @@ module Mongoid  #:nodoc:
       def set(how_much, date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
-        @owner.collection.update(
-            @owner.atomic_selector, { "$set" => update_hash(how_much, date) },
-            :upsert => true, :safe => false
-        )
+
+        @owner.set(store_key(date), how_much)
+
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$set" => update_hash(how_much, date) },
-              :upsert => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k, key: token.to_s }
+          
+          criteria = @owner.aggregate_klass.collection.find(selector)
+          criteria.upsert("$set" => update_hash(how_much.abs, date))
         end
       end
 
