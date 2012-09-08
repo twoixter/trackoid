@@ -14,7 +14,7 @@ module Mongoid  #:nodoc:
           self.aggregate_fields = {}
           self.aggregate_klass = nil
           delegate :aggregate_fields, :aggregate_klass, :aggregated?,
-                   :to => "self.class"
+                   to: "self.class"
         end
       end
 
@@ -62,7 +62,7 @@ module Mongoid  #:nodoc:
           raise Errors::AggregationNameDeprecated.new(name) if DEPRECATED_TOKENS.include? name.to_s
 
           define_aggregate_model if aggregate_klass.nil?
-          has_many_related internal_accessor_name(name), :class_name => aggregate_klass.to_s
+          has_many internal_accessor_name(name), class_name: aggregate_klass.to_s
           add_aggregate_field(name, block)
           create_aggregation_accessors(name)
         end
@@ -90,12 +90,13 @@ module Mongoid  #:nodoc:
           end
 
           parent = self
+          
           define_klass do
             include Mongoid::Document
             include Mongoid::Tracking
 
             # Make the relation to the original class
-            belongs_to_related parent.name.demodulize.underscore.to_sym, :class_name => parent.name
+            belongs_to parent.name.demodulize.underscore.to_sym, class_name: parent.name
 
             # Internal fields to track aggregation token and keys
             field :ns,  :type => String
@@ -106,16 +107,15 @@ module Mongoid  #:nodoc:
                     :unique => true, :background => true
 
             # Include parent tracking data.
-            parent.tracked_fields.each {|track_field| track track_field }
+            parent.tracked_fields.each { |track_field| track track_field }
           end
+
           self.aggregate_klass = internal_aggregates_name.constantize
         end
 
         # Returns true if there is a class defined with the same name as our
         # aggregate class.
         def foreign_class_defined?
-          # The following construct doesn't work with namespaced constants.
-          # Object.const_defined?(internal_aggregates_name.to_sym)
           internal_aggregates_name.constantize && true
         rescue NameError
           false
@@ -132,7 +132,9 @@ module Mongoid  #:nodoc:
         def define_klass(&block)
           scope = internal_aggregates_name.split('::')
           klass = scope.pop
-          scope = scope.inject(Object) {|scope, const_name| scope.const_get(const_name)}
+          scope = scope.inject(Object) do |scope, const_name| 
+            scope.const_get(const_name)
+          end
           klass = scope.const_set(klass, Class.new)
           klass.class_eval(&block)
         end
