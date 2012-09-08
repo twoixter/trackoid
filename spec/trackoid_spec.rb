@@ -186,53 +186,46 @@ describe Mongoid::Tracking do
   end
 
   context "testing reader operations without reloading models" do
-    before(:all) do
-      Test.delete_all
-      Test.create(:name => "test")
-      @object_id = Test.first.id
-    end
-
-    before do
-      @mock = Test.find(@object_id)
-    end
+    let(:test) { Test.create(name: "test") }
+    let(:object_id) { test.id }
 
     it "'set' operator must work" do
-      @mock.visits.set(5)
-      @mock.visits.today.should == 5
-      Test.find(@object_id).visits.today.should == 5
+      test.visits.set(5)
+      test.visits.today.should == 5
+      Test.find(object_id).visits.today.should == 5
     end
 
     it "'set' operator must work on arbitrary days" do
-      @mock.visits.set(5, Time.parse("2010-05-01"))
-      @mock.visits.on(Time.parse("2010-05-01")).should == 5
-      Test.find(@object_id).visits.on(Time.parse("2010-05-01")).should == 5
+      test.visits.set(5, Time.parse("2010-05-01"))
+      test.visits.on(Time.parse("2010-05-01")).should == 5
+      Test.find(object_id).visits.on(Time.parse("2010-05-01")).should == 5
     end
 
     it "'add' operator must work" do
-      @mock.visits.add(5)
-      @mock.visits.today.should == 10   # Remember 5 set on previous test
-      Test.find(@object_id).visits.today.should == 10
+      test.visits.add(5)
+      test.visits.today.should == 10   # Remember 5 set on previous test
+      Test.find(object_id).visits.today.should == 10
     end
 
     it "'add' operator must work on arbitrary days" do
-      @mock.visits.add(5, Time.parse("2010-05-01"))
-      @mock.visits.on(Time.parse("2010-05-01")).should == 10
-      Test.find(@object_id).visits.on(Time.parse("2010-05-01")).should == 10
+      test.visits.add(5, Time.parse("2010-05-01"))
+      test.visits.on(Time.parse("2010-05-01")).should == 10
+      Test.find(object_id).visits.on(Time.parse("2010-05-01")).should == 10
     end
 
     it "on() accessor must work on dates as String" do
-      # We have data for today as previous tests populated the visits field
-      @mock.visits.on("2010-05-01").should == 10
+      # We have data for 2010-05-01 as previous tests populated the visits field
+      test.visits.on("2010-05-01").should == 10
     end
 
     it "on() accessor must work on Date descendants" do
-      # We have data for today as previous tests populated the visits field
-      @mock.visits.on(Date.parse("2010-05-01")).should == 10
+      # We have data for 2010-05-01 as previous tests populated the visits field
+      test.visits.on(Date.parse("2010-05-01")).should == 10
     end
 
     it "on() accessor must work on dates as Ranges" do
-      # We have data for today as previous tests populated the visits field
-      @mock.visits.on(Time.parse("2010-04-30")..Time.parse("2010-05-02")).should == [0, 10, 0]
+      # We have data for 2010-05-01 as previous tests populated the visits field
+      test.visits.on(Time.parse("2010-04-30")..Time.parse("2010-05-02")).should == [0, 10, 0]
     end
   end
 
