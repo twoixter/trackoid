@@ -96,11 +96,10 @@ module Mongoid  #:nodoc:
         # operations over all mongo records for this aggregate field
         @owner.aggregate_fields.each do |(k,v)|
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$set" => update_hash(how_much, date) },
-              :upsert => true, :multi => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k }
+
+          criteria = @owner.aggregate_klass.collection.find(selector)
+          criteria.upsert("$set" => update_hash(how_much.abs, date))
         end
       end
 
