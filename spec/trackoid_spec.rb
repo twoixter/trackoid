@@ -8,22 +8,14 @@ class Test
   track :visits
 end
 
-describe Mongoid::Tracking do
-  before(:all) do
-    @trackoid_version = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
-  end
-
-  it "should expose the same version as the VERSION file" do
-    Mongoid::Tracking::VERSION.should == @trackoid_version
-  end
-  
+describe Mongoid::Tracking do  
   it "should raise error when used in a class not of class Mongoid::Document" do
     lambda {
       class NotMongoidClass
         include Mongoid::Tracking
         track :something
       end
-    }.should raise_error Mongoid::Errors::NotMongoid
+    }.should raise_error Mongoid::Tracking::Errors::NotMongoid
   end
 
   it "should not raise error when used in a class of class Mongoid::Document" do
@@ -90,7 +82,7 @@ describe Mongoid::Tracking do
     end
 
     it "should not update stats when new record" do
-      lambda { @mock.visits.inc }.should raise_error Mongoid::Errors::ModelNotSaved
+      lambda { @mock.visits.inc }.should raise_error Mongoid::Tracking::Errors::ModelNotSaved
     end
 
     it "should create an empty hash as the internal representation" do

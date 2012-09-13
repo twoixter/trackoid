@@ -109,7 +109,7 @@ describe Mongoid::Tracking::Aggregates do
           "(none)"
         end
       end
-    }.should raise_error Mongoid::Errors::AggregationAlreadyDefined
+    }.should raise_error Mongoid::Tracking::Errors::AggregationAlreadyDefined
   end
 
   it "should raise error if we try to use 'hours' as aggregate" do
@@ -119,7 +119,7 @@ describe Mongoid::Tracking::Aggregates do
           "(none)"
         end
       end
-    }.should raise_error Mongoid::Errors::AggregationNameDeprecated
+    }.should raise_error Mongoid::Tracking::Errors::AggregationNameDeprecated
   end
 
   it "should have Mongoid accessors defined" do
@@ -150,7 +150,7 @@ describe Mongoid::Tracking::Aggregates do
           "other"
         end
       end
-    }.should raise_error Mongoid::Errors::ClassAlreadyDefined
+    }.should raise_error Mongoid::Tracking::Errors::ClassAlreadyDefined
   end
 
   it "should NOT raise error if the already defined class is our aggregated model" do
@@ -168,7 +168,7 @@ describe Mongoid::Tracking::Aggregates do
           "other"
         end
       end
-    }.should_not raise_error Mongoid::Errors::ClassAlreadyDefined
+    }.should_not raise_error Mongoid::Tracking::Errors::ClassAlreadyDefined
   end
 
   it "should raise error although the already defined class includes tracking" do
@@ -186,7 +186,7 @@ describe Mongoid::Tracking::Aggregates do
           "other"
         end
       end
-    }.should raise_error Mongoid::Errors::ClassAlreadyDefined
+    }.should raise_error Mongoid::Tracking::Errors::ClassAlreadyDefined
   end
 
   describe "testing different object class for aggregation key" do

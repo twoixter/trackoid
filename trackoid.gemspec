@@ -19,7 +19,6 @@ Gem::Specification.new do |s|
     "Gemfile",
     "LICENSE",
     "Rakefile",
-    "VERSION",
     "lib/trackoid.rb",
     "lib/trackoid/aggregates.rb",
     "lib/trackoid/core_ext.rb",
