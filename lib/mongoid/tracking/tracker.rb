@@ -54,8 +54,8 @@ module Mongoid  #:nodoc:
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, ns: k, key: token.to_s }
 
-          criteria = @owner.aggregate_klass.collection.find(selector)
-          criteria.upsert("$inc" => update_hash(how_much.abs, date))
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.upsert("$inc" => update_hash(how_much.abs, date))
         end
       end
 
@@ -80,8 +80,8 @@ module Mongoid  #:nodoc:
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, ns: k, key: token.to_s }
           
-          criteria = @owner.aggregate_klass.collection.find(selector)
-          criteria.upsert("$set" => update_hash(how_much.abs, date))
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.upsert("$set" => update_hash(how_much.abs, date))
         end
       end
 
@@ -97,9 +97,8 @@ module Mongoid  #:nodoc:
         @owner.aggregate_fields.each do |(k,v)|
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, ns: k }
-
-          criteria = @owner.aggregate_klass.collection.find(selector)
-          criteria.upsert("$set" => update_hash(how_much.abs, date))
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.update_all("$set" => update_hash(how_much.abs, date))
         end
       end
 
@@ -118,8 +117,8 @@ module Mongoid  #:nodoc:
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, ns: k }
 
-          criteria = @owner.aggregate_klass.collection.find(selector)
-          criteria.upsert("$unset" => update_hash(1, date))
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.update_all("$unset" => update_hash(1, date))
         end
       end
 
