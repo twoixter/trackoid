@@ -1,8 +1,6 @@
 # encoding: utf-8
 require 'rubygems'
 
-gem "mongoid", ">= 1.9.0"
-
 require 'trackoid/errors'
 require 'trackoid/core_ext'
 require 'trackoid/reader_extender'
@@ -11,12 +9,4 @@ require 'trackoid/tracker'
 require 'trackoid/aggregates'
 require 'trackoid/tracker_aggregates'
 require 'trackoid/tracking'
-
-module Mongoid #:nodoc:
-  module Tracking
-
-    VERSION = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
-
-  end
-end
 

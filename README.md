@@ -4,6 +4,8 @@ Trackoid is an analytics tracking system made specifically for MongoDB using Mon
 
 = *** IMPORTANT ***
 
+Trackoid Version 0.4.0 is updated to work with Mongoid 3. It's NOT backwards compatible with any previous version of Mongoid. A dependency on Ruby 1.9.x has also been added.
+
 Trackoid Version 0.3.0 changes the internal representation of tracking data. So <b>YOU WILL NOT SEE PREVIOUS DATA</b> when you update.
 
 Hopefully, due to the magic of MongoDB, data is <b>NOT LOST</b>. In fact it's never lost unless you delete it. :-) Just it's not visible right away.

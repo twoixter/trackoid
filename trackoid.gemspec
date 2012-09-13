@@ -1,10 +1,13 @@
-# -*- encoding: utf-8 -*-
+# encoding: utf-8
+$:.push File.expand_path("../lib", __FILE__)
+
+require "trackoid/version"
 
 Gem::Specification.new do |s|
   s.name = "trackoid"
   s.description = "Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability"  
   s.summary = "Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid"
-  s.version = "0.3.8"
+  s.version = Trackoid::VERSION
   s.authors = ["Jose Miguel Perez"]
   s.date = "2012-07-07"
   s.email = "josemiguel@perezruiz.com"
@@ -42,8 +45,8 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'mongoid', '~> 3.0.5'
   s.add_dependency 'rake'
-  s.add_dependency 'rspec'
-  s.add_dependency 'mocha'
-  s.add_dependency 'database_cleaner'
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'mocha'
+  s.add_development_dependency 'database_cleaner'
 end
 
