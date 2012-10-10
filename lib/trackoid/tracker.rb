@@ -45,11 +45,23 @@ module Mongoid  #:nodoc:
         # read the actual value in return so that we save round trip delays.
         #
         update_data(data_for(date) + how_much, date)
-        @owner.collection.update(
-            @owner.atomic_selector,
-            { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-            :upsert => true, :safe => false
-        )
+
+        # Different behaviour if the document is embedded or not (accessing 
+        # to @owner.collection in an embedded document give an InvalidCollection error)
+        if (!@owner.embedded?)
+          @owner.collection.update(
+              @owner.atomic_selector,
+              { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, dat$
+              :upsert => true, :safe => false
+          )
+        else
+          @owner._parent.collection.update(
+              @owner.atomic_selector,
+              { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, dat$
+              :upsert => true, :safe => false
+          )
+        end
+
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
