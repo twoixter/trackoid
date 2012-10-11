@@ -10,9 +10,7 @@ module Mongoid  #:nodoc:
         @owner, @for = owner, field
         @for_data = @owner.internal_track_name(@for)
         @data = @owner.read_attribute(@for_data)
-        
-        # The following is needed if the "field" Mongoid definition for our
-        # internal tracking field does not include option ":default => {}"
+
         if @data.nil?
           @owner.write_attribute(@for_data, {})
           @data = @owner.read_attribute(@for_data)
@@ -79,7 +77,7 @@ module Mongoid  #:nodoc:
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
           selector = { fk => @owner.id, ns: k, key: token.to_s }
-          
+
           docs = @owner.aggregate_klass.collection.find(selector)
           docs.upsert("$set" => update_hash(how_much.abs, date))
         end

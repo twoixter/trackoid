@@ -5,7 +5,7 @@ require "trackoid/version"
 
 Gem::Specification.new do |s|
   s.name = "trackoid"
-  s.description = "Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability"  
+  s.description = "Trackoid uses an embeddable approach to track analytics data using the poweful features of MongoDB for scalability"
   s.summary = "Trackoid is an easy scalable analytics tracker using MongoDB and Mongoid"
   s.version = Trackoid::VERSION
   s.authors = ["Jose Miguel Perez"]
@@ -46,6 +46,5 @@ Gem::Specification.new do |s|
   s.add_dependency 'rake'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'mocha'
-  s.add_development_dependency 'database_cleaner'
 end
 

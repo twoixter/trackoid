@@ -10,10 +10,10 @@ module Mongoid #:nodoc:
         unless self.ancestors.include? Mongoid::Document
           raise Errors::NotMongoid, "Must be included in a Mongoid::Document"
         end
-        
+
         include Aggregates
         extend ClassMethods
-        
+
         class_attribute :tracked_fields
         self.tracked_fields = []
         delegate :tracked_fields, :internal_track_name, to: "self.class"
@@ -41,15 +41,12 @@ module Mongoid #:nodoc:
       # Configures the internal fields for tracking. Additionally also creates
       # an index for the internal tracking field.
       def set_tracking_field(name)
-        field internal_track_name(name), type: Hash    # , :default => {}
-
         # DONT make an index for this field. MongoDB indexes have limited
         # size and seems that this is not a good target for indexing.
         # index internal_track_name(name)
-
         tracked_fields << name
       end
-      
+
       # Creates the tracking field accessor and also disables the original
       # ones from Mongoid. Hidding here the original accessors for the
       # Mongoid fields ensures they doesn't get dirty, so Mongoid does not
@@ -58,29 +55,13 @@ module Mongoid #:nodoc:
         define_method(name) do |*aggr|
           Tracker.new(self, name, aggr)
         end
-
-        # Should we just "undef" this methods?
-        # They override the ones defined from Mongoid
-        define_method("#{name}_data") do
-          raise NoMethodError
-        end
-
-        define_method("#{name}_data=") do |m|
-          raise NoMethodError
-        end
-        
-        # I think it's important to override also the #{name}_changed? so
-        # as to be sure Mongoid never mark this field as dirty.
-        define_method("#{name}_changed?") do
-          false
-        end
       end
-      
+
       # Updates the aggregated class for it to include a new tracking field
       def update_aggregates(name)
         aggregate_klass.track name
       end
-      
+
     end
 
   end
