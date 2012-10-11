@@ -19,7 +19,8 @@ class Time
   ONEDAY = 24 * ONEHOUR
 
   def to_i_timestamp
-    self.dup.utc.to_i / ONEDAY
+    #Adding a fix for case where the 'quo' is being used instead of Fixnum's '/' operator
+    (self.dup.utc.to_i / ONEDAY).to_i
   end
 
   def to_key_timestamp

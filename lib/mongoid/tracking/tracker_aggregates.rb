@@ -10,8 +10,8 @@ module Mongoid  #:nodoc:
         @track_field = track_field
 
         @accessor = @owner.class.send(:internal_accessor_name, @token)
-        @selector = {:ns => @token}
-        @selector.merge!(:key => @key) if @key
+        @selector = { ns: @token }
+        @selector.merge!(key: @key) if @key
 
         @criteria = @owner.send(@accessor).where(@selector)
       end

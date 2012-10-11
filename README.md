@@ -1,8 +1,10 @@
-= trackoid
+# trackoid
 
 Trackoid is an analytics tracking system made specifically for MongoDB using Mongoid as ORM.
 
-= *** IMPORTANT ***
+# *** IMPORTANT ***
+
+Trackoid Version 0.4.0 is updated to work with Mongoid 3. It's NOT backwards compatible with any previous version of Mongoid. A dependency on Ruby 1.9.x has also been added.
 
 Trackoid Version 0.3.0 changes the internal representation of tracking data. So <b>YOU WILL NOT SEE PREVIOUS DATA</b> when you update.
 
@@ -11,13 +13,13 @@ Hopefully, due to the magic of MongoDB, data is <b>NOT LOST</b>. In fact it's ne
 See <b>Changes for TZ support</b> below for an explanation of changes. If you absolutely, desperately, dead or alive, need a migration, leave me a message and we can arrange a migration script.
 
 
-= Requirements
+# Requirements
 
 Trackoid requires Mongoid, which obviously in turn requires MongoDB. Although you can only use Trackoid in Rails projects using Mongoid, it can easily be ported to MongoMapper or other ORM. You can also port it to work directly using MongoDB.
 
 Please feel free to fork and port to other libraries. However, Trackoid really requires MongoDB since it is build from scratch to take advantage of several MongoDB features (please let me know if you dare enough to port Trackoid into CouchDB or similar, I will be glad to know).
 
-= Using Trackoid to track analytics information for models
+# Using Trackoid to track analytics information for models
 
 Given the most obvious use for Trackoid, consider this example:
 
@@ -52,11 +54,11 @@ Of course, you can also show visits in a time range:
       <% end %>
     </ul>
 
-== Not only visits...
+## Not only visits...
 
 Of course, you can use Trackoid to track all actions who require numeric analytics in a date frame.
 
-=== Prevent login to a control panel with a maximum login attemps
+### Prevent login to a control panel with a maximum login attemps
 
 You can track invalid logins so you can prevent login for a user when certain invalid login had been made. Imagine your login controller:
 
@@ -92,7 +94,7 @@ Note that additionally you have the full failed login history for free. :-)
     @user.failed_logins.this_month
 
 
-=== Automatically saving a history of document changes
+### Automatically saving a history of document changes
 
 You can combine Trackoid with the power of callbacks to automatically track certain operations, for example modification of a document. This way you have a history of document changes.
 
@@ -112,7 +114,7 @@ You can combine Trackoid with the power of callbacks to automatically track cert
     end
 
 
-=== Track temperature history for a nuclear plant
+### Track temperature history for a nuclear plant
 
 Imagine you need a web service to track the temperature of all rooms of a nuclear plant. Now you have a simple method to do this:
 
@@ -137,12 +139,12 @@ So, you are not restricted into incrementing or decrementing a value, you can al
     @room.temperature.last_days(30).max
 
 
-= How does it works?
+# How does it works?
 
 Trakoid works by embedding date tracking information into the models. The date tracking information is limited by a granularity of days, but you can use aggregates if you absolutely need hour or minutes granularity.
 
 
-== Scalability and performance
+## Scalability and performance
 
 Trackoid is made from the ground up to take advantage of the great scalability features of MongoDB. Trackoid uses "upsert" operations, bypassing Mongoid controllers so that it can be used in a distributed system without data loss. This is perfect for a cloud hosted SaaS application!
 
@@ -168,7 +170,7 @@ This way, the collection can receive multiple incremental operations without req
 
 In practice, we don't need visits information so fine grained, but it's good to take this into account.
 
-== Embedding tracking information into models
+## Embedding tracking information into models
 
 Tracking analytics data in SQL databases was historicaly saved into her own table, perhaps called `site_visits` with a relation to the sites table and each row saving an integer for each day.
 
@@ -184,7 +186,7 @@ With this schema, it's easy to get visits for a website using single SQL stateme
 
 Trackoid uses an embedding approach to tackle this. For the above examples, Trackoid would embedd a ruby Hash into the Site model. This means the tracking information is already saved "inside" the Site, and we don't have to reach the database for any date querying! Moreover, since the data retrieved with the accessor methods like "last_days", "this_month" and the like, are already arrays, we could use Array methods like sum, count, max, min, etc...
 
-== Memory implications
+## Memory implications
 
 Since storing all tracking information with the model implies we add additional information that can grow, and grow, and grow... You can be wondering yourself if this is a good idea. Yes, it's is, or at least I think so. Let me convice you...
 
@@ -195,7 +197,7 @@ A year full of statistical data takes only 2.8Kb, if you store integers. If your
 For comparison, this README is already 8.5Kb in size...
 
 
-= Changes for TZ support
+# Changes for TZ support
 
 Well, this is the time (no pun intended) to add TZ support to Trackoid.
 
@@ -203,7 +205,7 @@ The problem is that "today" is not the same "today" for everyone, so unless you 
 
 But... Okay, given the fact that "today" is not the same "today" for everyone, this is the brand new Trackoid, with TZ support.
 
-== What has changed?
+## What has changed?
 
 In the surface, almost nothing, but internally there has been a major rewrite of the tracking code (the 'inc', 'set' methods) and the readers ('today', 'yesterday', etc). This is due to the changes I've made to the MongoDB structure of the tracking data.
 
@@ -275,7 +277,7 @@ The contents of every "day record" is another hash with 24 keys, one for each ho
       { :upsert => true, :safe => false }
     )
 
-== What "today" is it?
+## What "today" is it?
 
 All dates are saved in UTC. That means Trackoid returns a whole 24 hour block for "today" only where the TZ is exactly UTC/GMT (no offset). If you live in a country where there is an offset into UTC, Trackoid must read a whole block and some hours from the block before or after to build "your today".
 
@@ -305,7 +307,7 @@ This is a more graphical representation:
 For timezones with a negative offset from UTC (Like PDT/PST) the process is reversed: UTC values are shifted down and holes filled with the following day.
 
 
-== How should I tell Trackoid how TZ to use?
+## How should I tell Trackoid how TZ to use?
 
 Piece of cake: Use the reader methods "today", "yesterday", "last_days(N)" and Trackoid will use the effective Time Zone of your Rails/Ruby application.
 
@@ -313,7 +315,8 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
 
 
-= Revision History
+# Revision History
+  0.3.8  - Fixed support for Ruby 1.9.3
 
   0.3.7  - Fixed support for Rails 3.1 and Mongoid 2.2
 
