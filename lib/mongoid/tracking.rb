@@ -16,7 +16,7 @@ module Mongoid #:nodoc:
         
         class_attribute :tracked_fields
         self.tracked_fields = []
-        delegate :tracked_fields, :internal_track_name, :to => "self.class"
+        delegate :tracked_fields, :internal_track_name, to: "self.class"
       end
     end
 
@@ -41,7 +41,7 @@ module Mongoid #:nodoc:
       # Configures the internal fields for tracking. Additionally also creates
       # an index for the internal tracking field.
       def set_tracking_field(name)
-        field internal_track_name(name), :type => Hash    # , :default => {}
+        field internal_track_name(name), type: Hash    # , :default => {}
 
         # DONT make an index for this field. MongoDB indexes have limited
         # size and seems that this is not a good target for indexing.

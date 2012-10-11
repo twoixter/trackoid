@@ -1,10 +1,6 @@
-source 'http://rubygems.org'
+source "http://rubygems.org"
 
-gem 'mongoid', '>= 2.1.0'
-
-group :development do
-  gem 'rake'
-  gem 'jeweler'
-  gem 'rspec', '>= 2.2.0'
-  gem 'mocha', '0.11.0'
-end
+# Declare your gem's dependencies in front.gemspec.
+# Bundler will treat runtime dependencies like base dependencies, and
+# development dependencies will be added by default to the :development group.
+gemspec

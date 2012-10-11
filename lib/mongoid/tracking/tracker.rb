@@ -45,22 +45,17 @@ module Mongoid  #:nodoc:
         # read the actual value in return so that we save round trip delays.
         #
         update_data(data_for(date) + how_much, date)
-        @owner.collection.update(
-            @owner.atomic_selector,
-            { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-            :upsert => true, :safe => false
-        )
+        @owner.inc(store_key(date), how_much.abs)
+
         return unless @owner.aggregated?
 
-        @owner.aggregate_fields.each do |(k,v)|
+        @owner.aggregate_fields.each do |k, v|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update(
-              selector,
-              { (how_much > 0 ? "$inc" : "$dec") => update_hash(how_much.abs, date) },
-              :upsert => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k, key: token.to_s }
+
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.upsert("$inc" => update_hash(how_much.abs, date))
         end
       end
 
@@ -75,20 +70,18 @@ module Mongoid  #:nodoc:
       def set(how_much, date = Time.now)
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
         update_data(how_much, date)
-        @owner.collection.update(
-            @owner.atomic_selector, { "$set" => update_hash(how_much, date) },
-            :upsert => true, :safe => false
-        )
+
+        @owner.set(store_key(date), how_much)
+
         return unless @owner.aggregated?
 
         @owner.aggregate_fields.each do |(k,v)|
           next unless token = v.call(@aggregate_data)
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k, :key => token.to_s }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$set" => update_hash(how_much, date) },
-              :upsert => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k, key: token.to_s }
+          
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.upsert("$set" => update_hash(how_much.abs, date))
         end
       end
 
@@ -103,11 +96,9 @@ module Mongoid  #:nodoc:
         # operations over all mongo records for this aggregate field
         @owner.aggregate_fields.each do |(k,v)|
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$set" => update_hash(how_much, date) },
-              :upsert => true, :multi => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k }
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.update_all("$set" => update_hash(how_much.abs, date))
         end
       end
 
@@ -115,22 +106,19 @@ module Mongoid  #:nodoc:
         raise Errors::ModelNotSaved, "Can't update a new record" if @owner.new_record?
 
         remove_data(date)
-        @owner.collection.update(
-            @owner.atomic_selector,
-            { "$unset" => update_hash(1, date) },
-            :upsert => true, :safe => false
-        )
+
+        @owner.unset(store_key(date))
+
         return unless @owner.aggregated?
 
         # Need to iterate over all aggregates and send an update or delete
         # operations over all mongo records
         @owner.aggregate_fields.each do |(k,v)|
           fk = @owner.class.name.to_s.foreign_key.to_sym
-          selector = { fk => @owner.id, :ns => k }
-          @owner.aggregate_klass.collection.update(
-              selector, { "$unset" => update_hash(1, date) },
-              :upsert => true, :multi => true, :safe => false
-          )
+          selector = { fk => @owner.id, ns: k }
+
+          docs = @owner.aggregate_klass.collection.find(selector)
+          docs.update_all("$unset" => update_hash(1, date))
         end
       end
 
@@ -162,10 +150,10 @@ module Mongoid  #:nodoc:
         date = normalize_date(date)
         if date.first.utc?
           keys = date.map(&:to_key_timestamp)
-          keys.inject([]) {|r,e|
+          keys.inject([]) do |r, e|
             d = expand_hash(@data[e])
             r << ReaderExtender.new(d.sum, d)
-          }
+          end
         else
           first = date.first.whole_day.first.to_key_timestamp
           last  = date.last.whole_day.last.to_key_timestamp
@@ -185,7 +173,7 @@ module Mongoid  #:nodoc:
 
       def expand_hash(h)
         d = Array.new(24, 0)
-        h.inject(d) {|d,e| d[e.first.to_i] = e.last; d} if h
+        h.inject(d) { |d, e| d[e.first.to_i] = e.last; d } if h
         d
       end
 
@@ -214,13 +202,16 @@ module Mongoid  #:nodoc:
         end
       end
 
-      def update_hash(num, date)
-        date = normalize_date(date)
-        {
-          "#{@for_data}.#{date.to_key}" => num
-        }
+      # Returns a store key for passed date.
+      def store_key(date)
+        "#{@for_data}.#{normalize_date(date).to_key}"
       end
 
+      def update_hash(num, date)
+        { store_key(date) => num }
+      end
+
+      # Allow for dates to be different types.
       def normalize_date(date)
         case date
         when String

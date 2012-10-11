@@ -1,22 +1,12 @@
 # encoding: utf-8
-require 'rubygems'
 
-gem "mongoid", ">= 1.9.0"
+require 'trackoid/version'
 
-require 'trackoid/errors'
-require 'trackoid/core_ext'
-require 'trackoid/reader_extender'
-require 'trackoid/readers'
-require 'trackoid/tracker'
-require 'trackoid/aggregates'
-require 'trackoid/tracker_aggregates'
-require 'trackoid/tracking'
-
-module Mongoid #:nodoc:
-  module Tracking
-
-    VERSION = File.read(File.expand_path("../VERSION", File.dirname(__FILE__)))
-
-  end
-end
-
+require 'mongoid/tracking'
+require 'mongoid/tracking/errors'
+require 'mongoid/tracking/core_ext'
+require 'mongoid/tracking/reader_extender'
+require 'mongoid/tracking/readers'
+require 'mongoid/tracking/tracker'
+require 'mongoid/tracking/aggregates'
+require 'mongoid/tracking/tracker_aggregates'
