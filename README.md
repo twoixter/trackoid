@@ -1,16 +1,22 @@
-# trackoid
+# Trackoid
 
 Trackoid is an analytics tracking system made specifically for MongoDB using Mongoid as ORM.
 
-# *** IMPORTANT ***
+## IMPORTANT upgrade information
 
-Trackoid Version 0.4.0 is updated to work with Mongoid 3. It's NOT backwards compatible with any previous version of Mongoid. A dependency on Ruby 1.9.x has also been added.
+**Trackoid Version 0.4.0** is updated to work with Mongoid 3. It's NOT backwards compatible with any previous version of Mongoid. A dependency on Ruby 1.9.x has also been added.
 
-Trackoid Version 0.3.0 changes the internal representation of tracking data. So <b>YOU WILL NOT SEE PREVIOUS DATA</b> when you update.
+**Trackoid Version 0.3.0** changes the internal representation of tracking data. So **YOU WILL NOT SEE PREVIOUS DATA** when you update.
 
-Hopefully, due to the magic of MongoDB, data is <b>NOT LOST</b>. In fact it's never lost unless you delete it. :-) Just it's not visible right away.
+Hopefully, due to the magic of MongoDB, data is **NOT LOST**. In fact it's never lost unless you delete it. :-) _Just it's not visible right away_.
 
-See <b>Changes for TZ support</b> below for an explanation of changes. If you absolutely, desperately, dead or alive, need a migration, leave me a message and we can arrange a migration script.
+See **Changes for TZ support** below for an explanation of changes in the internal representation of tracked data.
+
+### Should I 'lock' the Trackoid version with Bundler?
+
+If you are new to Trackoid and don't know what I'm talking about **you're safe** upgrading from 0.4.x onwards.
+
+If you are having problems with Ruby 1.9.3 or not using Mongoid 3.x, probably you'll want to lock on 0.3.x, since 0.4.x *requires Mongoid 3.x** and hence, requires Ruby 1.9.3+.
 
 
 # Requirements
