@@ -31,12 +31,12 @@ Given the most obvious use for Trackoid, consider this example:
 
       track :visits
     end
-    
+
 This class models a web page, and by using `track :visits` we add a `visits` field to track... well... visits. :-) Later, in out controller we can do:
 
     def view
       @page = WebPage.find(params[:webpage_id])
-      
+
       @page.visits.inc  # Increment a visit to this page
     end
 
@@ -66,14 +66,14 @@ You can track invalid logins so you can prevent login for a user when certain in
     class User
       include Mongoid::Document
       include Mongoid::Tracking
-      
+
       track :failed_logins
     end
 
     # User controller
     def login
       user = User.find(params[:email])
-      
+
       # Stop login if failed attemps > 3
       redirect(root_path) if user.failed_logins.today > 3
 
@@ -122,7 +122,7 @@ Imagine you need a web service to track the temperature of all rooms of a nuclea
     class Room
       include Mongoid::Document
       include Mongoid::Tracking
-      
+
       track :temperature
     end
 
@@ -130,7 +130,7 @@ Imagine you need a web service to track the temperature of all rooms of a nuclea
     # Temperature controller
     def set_temperature_for_room
       @room = Room.find(params[:room_number])
-    
+
       @room.temperature.set(current_temperature)
     end
 
@@ -175,7 +175,7 @@ In practice, we don't need visits information so fine grained, but it's good to 
 Tracking analytics data in SQL databases was historicaly saved into her own table, perhaps called `site_visits` with a relation to the sites table and each row saving an integer for each day.
 
     Table "site_visits"
-   
+
     SiteID  Date        Visits
     ------  ----------  ------
     1234    2010-05-01  34
@@ -294,11 +294,11 @@ Example: I live in GMT+0200 (Daylight saving in effect, or summer time), then if
         "02" : 30,
         ""
       }
-    
+
 This is a more graphical representation:
 
     Hours  00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23
-    ------ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --        
+    ------ -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
     GMT+2: 00 00 00 XX 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
       UTC: --->  00 XX 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
            Shift up ---> 2 hours.
@@ -344,7 +344,7 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
          - Renamed the internal field of ReaderExtender to "total" so that
            converting to json automatically gives you:
-           
+
            {
              "total": <total value>
              "hours": [<hours array>]
@@ -359,13 +359,13 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
             * Reset does the same as "set" but also sets aggregate fields.
 
               Example:
-              
+
                 A) model.value(aggregate_data).set(5)
                 B) model.value(aggregate_data).reset(5)
-                
+
                 A will set "5" to the 'value' and to the aggregate.
                 B will set "5" to the 'value' and all aggregates.
-                
+
             * Erase resets the values in the mongo database. Note that this
               is completely different of doing 'reset(0)'. (With erase you
               can actually recall space from the database).
@@ -419,4 +419,3 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
   0.1.5  -  Added support for namespaced models and aggregations
          -  Enabled "set" operations on aggregates
-
