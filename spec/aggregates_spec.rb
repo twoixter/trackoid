@@ -271,7 +271,7 @@ describe Mongoid::Tracking::Aggregates do
       test_model.visits.referers.today.should =~ [["firefox", 1], ["chrome", 1]]
 
       # Just for testing array manipulations
-      test_model.visits.browsers.today.inject(0) {|total, c| total + c.last }.should == 2
+      test_model.visits.browsers.today.inject(0) {|total, c| c.last + total }.should == 2
     end
 
     it "should return only values when specifying the aggregation key" do
@@ -287,13 +287,6 @@ describe Mongoid::Tracking::Aggregates do
       test_model.visits.today.should == 5
     end
 
-    it "let's check what happens when sorting the best browser..." do
-      test_model.visits("Mozilla Firefox").inc
-      test_model.visits("Google Chrome").set(6)
-      test_model.visits.browsers.today.should =~ [["mozilla", 1], ["google", 6]]
-      test_model.visits.browsers.today.max {|a,b| a.second <=> b.second }.should == ["google", 6]
-    end
-
     it "should work without aggregation information" do
       test_model.visits("Mozilla Firefox").set(1)
       test_model.visits("Google Chrome").set(6)
@@ -305,7 +298,7 @@ describe Mongoid::Tracking::Aggregates do
 
       # A more throughout test would check totals...
       visits_today = test_model.visits.today
-      visits_today_with_browser = test_model.visits.browsers.today.inject(0) {|total, c| total + c.last }
+      visits_today_with_browser = test_model.visits.browsers.today.inject(0) {|total, c| c.last + total }
       visits_today.should == visits_today_with_browser
     end
   end
