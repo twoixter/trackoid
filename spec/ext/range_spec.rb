@@ -2,6 +2,10 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe Range do
   describe "using the diff method" do
+    before do
+      ENV['TZ'] = 'America/Los_Angeles'
+    end
+
     it "should work for normal ranges" do
       (0..2).diff.should == 3
       (0...2).diff.should == 2

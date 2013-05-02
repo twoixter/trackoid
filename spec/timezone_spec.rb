@@ -260,28 +260,32 @@ describe Mongoid::Tracking do
     end
 
     it "A value set at 10am on Madrid should appear as 01am on San Francisco (Using offsets)" do
+      pending "Time.getlocal isn't implemented in JRuby" if RUBY_ENGINE == 'jruby'
+
       ENV["TZ"] = "Europe/Madrid"
 
-      time = Time.parse("2011-04-19 10:00:00").getlocal(2.hours)
+      time = Time.parse("2011-04-19 10:00:00").getlocal('+02:00')
       @mock.visits.inc(time)
       visits = @mock.visits.on(time)
       visits.hourly.should == [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-      time = Time.parse("2011-04-19 10:00:00").getlocal(-7.hours)
+      time = Time.parse("2011-04-19 10:00:00").getlocal('-07:00')
       visits = @mock.visits.on(time)
       visits.hourly.should == [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     end
 
     it "A value set now on Madrid should appear shifted 9 hours on San Francisco (Using offsets)" do
+      pending "Time.getlocal isn't implemented in JRuby" if RUBY_ENGINE == 'jruby'
+
       ENV["TZ"] = "Europe/Madrid"
 
       now = Time.now
-      time = now.getlocal(2.hours)
+      time = now.getlocal('+02:00')
       @mock.visits.inc(time)
       visits = @mock.visits.on(time)
       visits.hourly.should == Array.new(24, 0).tap {|a| a[time.hour] = 1}
 
-      time = now.getlocal(-7.hours)
+      time = now.getlocal('-07:00')
       visits = @mock.visits.on(time)
       visits.hourly.should == Array.new(24, 0).tap {|a| a[time.hour] = 1}
     end
