@@ -260,6 +260,8 @@ describe Mongoid::Tracking do
     end
 
     it "A value set at 10am on Madrid should appear as 01am on San Francisco (Using offsets)" do
+      pending "Time.getlocal isn't implemented in JRuby" if RUBY_ENGINE == 'jruby'
+
       ENV["TZ"] = "Europe/Madrid"
 
       time = Time.parse("2011-04-19 10:00:00").getlocal('+02:00')
@@ -273,6 +275,8 @@ describe Mongoid::Tracking do
     end
 
     it "A value set now on Madrid should appear shifted 9 hours on San Francisco (Using offsets)" do
+      pending "Time.getlocal isn't implemented in JRuby" if RUBY_ENGINE == 'jruby'
+
       ENV["TZ"] = "Europe/Madrid"
 
       now = Time.now
