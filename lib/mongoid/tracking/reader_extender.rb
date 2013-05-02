@@ -36,6 +36,10 @@ module Mongoid  #:nodoc:
         @total.to_f
       end
 
+      def to_i
+        @total.to_i
+      end
+
       def ==(other)
         @total == other
       end
@@ -44,9 +48,28 @@ module Mongoid  #:nodoc:
         @total <=> other
       end
 
+      def <(other)
+        @total < other
+      end
+      def <=(other)
+        @total <= other
+      end
+
+      def >(other)
+        @total > other
+      end
+      
+      def >(other)
+        @total >= other
+      end
+
       def +(other)
         return @total + other unless other.is_a?(ReaderExtender)
-        self.class.new(@total + other, @hours.zip(other.hourly).map!(&:sum))
+        self.class.new(other + @total, @hours.zip(other.hourly).map!(&:sum))
+      end
+
+      def coerce(other)
+        [self.to_i, other]
       end
 
       def as_json(options = nil)
