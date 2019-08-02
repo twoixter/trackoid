@@ -337,7 +337,7 @@ Trackoid will correctly translate dates for you (hopefully) if you pass a date t
 
   0.3.3  - as_json should take a "options" hash as optional parameter.
 
-  0.3.2  - ReaderExtender as_json sould not return the full "total" and
+  0.3.2  - ReaderExtender as_json should not return the full "total" and
            "hours" data. I think it's more reasonable to return just the
            total number like it always was. If you have the whole structure
            you need to add somewhere:
